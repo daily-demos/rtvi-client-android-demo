@@ -2,6 +2,7 @@ package ai.rtvi.client.basicdemo.ui
 
 import ai.rtvi.client.basicdemo.R
 import ai.rtvi.client.basicdemo.ui.theme.Colors
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +32,13 @@ fun UserCamButton(
         modifier = modifier.padding(15.dp),
         contentAlignment = Alignment.Center
     ) {
+        val color by animateColorAsState(
+            if (camEnabled) {
+                Colors.unmutedMicBackground
+            } else {
+                Colors.mutedMicBackground
+            }
+        )
 
         Box(
             Modifier
@@ -37,11 +46,7 @@ fun UserCamButton(
                 .border(6.dp, Color.White, CircleShape)
                 .border(1.dp, Colors.lightGrey, CircleShape)
                 .clip(CircleShape)
-                .background(if (camEnabled) {
-                    Colors.botIndicatorBackground
-                } else {
-                    Colors.mutedBackground
-                })
+                .background(color)
                 .clickable(onClick = onClick)
                 .padding(24.dp),
             contentAlignment = Alignment.Center,

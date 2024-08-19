@@ -2,6 +2,7 @@ package ai.rtvi.client.basicdemo.ui
 
 import ai.rtvi.client.basicdemo.R
 import ai.rtvi.client.basicdemo.ui.theme.Colors
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,11 +40,23 @@ fun UserMicButton(
         modifier = modifier.padding(15.dp),
         contentAlignment = Alignment.Center
     ) {
-        val borderThickness by animateDpAsState(if (isTalking.value) {
-            (24.dp * Math.pow(audioLevel.floatValue.toDouble(), 0.3).toFloat()) + 3.dp
-        } else {
-            6.dp
-        })
+        val borderThickness by animateDpAsState(
+            if (isTalking.value) {
+                (24.dp * Math.pow(audioLevel.floatValue.toDouble(), 0.3).toFloat()) + 3.dp
+            } else {
+                6.dp
+            }
+        )
+
+        val color by animateColorAsState(
+            if (!micEnabled) {
+                Colors.mutedMicBackground
+            } else if (isTalking.value) {
+                Color.Black
+            } else {
+                Colors.unmutedMicBackground
+            }
+        )
 
         Box(
             Modifier
@@ -51,22 +64,20 @@ fun UserMicButton(
                 .border(borderThickness, Color.White, CircleShape)
                 .border(1.dp, Colors.lightGrey, CircleShape)
                 .clip(CircleShape)
-                .background(if (micEnabled) {
-                    Colors.botIndicatorBackground
-                } else {
-                    Colors.mutedBackground
-                })
+                .background(color)
                 .clickable(onClick = onClick)
                 .padding(36.dp),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 modifier = Modifier.size(48.dp),
-                painter = painterResource(if (micEnabled) {
-                    R.drawable.microphone
-                } else {
-                    R.drawable.microphone_off
-                }),
+                painter = painterResource(
+                    if (micEnabled) {
+                        R.drawable.microphone
+                    } else {
+                        R.drawable.microphone_off
+                    }
+                ),
                 tint = Color.White,
                 contentDescription = if (micEnabled) {
                     "Mute microphone"

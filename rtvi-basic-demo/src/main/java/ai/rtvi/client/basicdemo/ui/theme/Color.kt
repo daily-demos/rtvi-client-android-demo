@@ -16,5 +16,6 @@ object Colors {
     val endButton = Color(0xFF0F172A)
 
     val botIndicatorBackground = Color(0xFF374151)
-    val mutedBackground = Color(0xFFF04A4A)
+    val mutedMicBackground = Color(0xFFF04A4A)
+    val unmutedMicBackground = Color(0xFF616978)
 }
