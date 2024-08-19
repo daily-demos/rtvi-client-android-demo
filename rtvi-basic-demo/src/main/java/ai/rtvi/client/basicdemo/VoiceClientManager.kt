@@ -66,6 +66,7 @@ class VoiceClientManager(private val context: Context) {
         mutableStateOf<Result<List<ActionDescription>, VoiceError>?>(null)
     private val clientStartTime = mutableStateOf<Timestamp?>(null)
 
+    private val clientBotReady = mutableStateOf(false)
     private val clientBotIsTalking = mutableStateOf(false)
     private val clientUserIsTalking = mutableStateOf(false)
     private val clientBotAudioLevel = mutableFloatStateOf(0f)
@@ -80,6 +81,7 @@ class VoiceClientManager(private val context: Context) {
         clientActionDescriptions
     val startTime: State<Timestamp?> = clientStartTime
 
+    val botReady: State<Boolean> = clientBotReady
     val botIsTalking: State<Boolean> = clientBotIsTalking
     val userIsTalking: State<Boolean> = clientUserIsTalking
     val botAudioLevel: FloatState = clientBotAudioLevel
@@ -87,8 +89,6 @@ class VoiceClientManager(private val context: Context) {
 
     val mic: State<Boolean> = clientMic
     val camera: State<Boolean> = clientCamera
-
-    var connectionIndex = 0
 
     fun start(baseUrl: String) {
 
@@ -98,13 +98,9 @@ class VoiceClientManager(private val context: Context) {
 
         clientState.value = TransportState.Idle
 
-        val currentConnectionIndex = connectionIndex
-
         val callbacks = object : VoiceEventCallbacks() {
             override fun onTransportStateChanged(state: TransportState) {
-                if (currentConnectionIndex == connectionIndex) {
-                    clientState.value = state
-                }
+                clientState.value = state
             }
 
             override fun onBackendError(message: String) {
@@ -115,10 +111,10 @@ class VoiceClientManager(private val context: Context) {
 
                 Log.i(TAG, "Bot ready. Version $version, config: $config")
 
+                clientBotReady.value = true
+
                 client.value?.describeActions()?.withCallback {
-                    if (currentConnectionIndex == connectionIndex) {
-                        clientActionDescriptions.value = it
-                    }
+                    clientActionDescriptions.value = it
                 }
             }
 
@@ -134,12 +130,12 @@ class VoiceClientManager(private val context: Context) {
                 Log.i(TAG, "Bot transcript: $text")
             }
 
-            override fun onBotStartedSpeaking(participant: Participant) {
-                Log.i(TAG, "Bot started speaking: ${participant.name}")
+            override fun onBotStartedSpeaking() {
+                Log.i(TAG, "Bot started speaking")
                 clientBotIsTalking.value = true
             }
 
-            override fun onBotStoppedSpeaking(participant: Participant) {
+            override fun onBotStoppedSpeaking() {
                 Log.i(TAG, "Bot stopped speaking")
                 clientBotIsTalking.value = false
             }
@@ -188,9 +184,8 @@ class VoiceClientManager(private val context: Context) {
         val client = DailyVoiceClient(context, baseUrl, callbacks, options)
 
         client.start().withErrorCallback {
-            if (currentConnectionIndex == connectionIndex) {
-                clientError.value = it
-            }
+            clientError.value = it
+            callbacks.onDisconnected()
         }
 
         this.client.value = client
@@ -208,7 +203,6 @@ class VoiceClientManager(private val context: Context) {
     fun toggleMic() = enableMic(!mic.value)
 
     fun stop() {
-        connectionIndex++
         client.value?.disconnect()
     }
 

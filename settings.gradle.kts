@@ -21,3 +21,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "RTVI Client Demo"
 include(":rtvi-basic-demo")
+
+/*
+include(":rtvi-client-android-daily")
+project(":rtvi-client-android-daily").projectDir = file("/../../rtvi-client-android-daily/rtvi-client-android-daily")
+ */

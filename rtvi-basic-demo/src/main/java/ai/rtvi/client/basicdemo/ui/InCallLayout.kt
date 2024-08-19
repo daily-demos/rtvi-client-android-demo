@@ -24,6 +24,7 @@ fun InCallLayout(
     onClickMic: () -> Unit,
     onClickCam: () -> Unit,
     startTime: State<Timestamp?>,
+    botIsReady: State<Boolean>,
     botIsTalking: State<Boolean>,
     botAudioLevel: FloatState,
     userIsTalking: State<Boolean>,
@@ -50,6 +51,7 @@ fun InCallLayout(
             ) {
                 BotIndicator(
                     modifier = Modifier,
+                    isReady = botIsReady.value,
                     isTalking = botIsTalking,
                     audioLevel = botAudioLevel
                 )

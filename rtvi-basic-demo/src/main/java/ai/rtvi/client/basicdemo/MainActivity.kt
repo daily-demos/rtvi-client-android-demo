@@ -96,6 +96,7 @@ class MainActivity : ComponentActivity() {
                             onClickMic = voiceClientManager::toggleMic,
                             onClickCam = voiceClientManager::toggleCamera,
                             startTime = voiceClientManager.startTime,
+                            botIsReady = voiceClientManager.botReady,
                             botIsTalking = voiceClientManager.botIsTalking,
                             botAudioLevel = voiceClientManager.botAudioLevel,
                             userIsTalking = voiceClientManager.userIsTalking,
