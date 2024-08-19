@@ -167,6 +167,7 @@ class VoiceClientManager(private val context: Context) {
                 clientError.value = null
                 clientState.value = null
                 clientActionDescriptions.value = null
+                clientBotReady.value = false
 
                 client.value?.release()
                 client.value = null
