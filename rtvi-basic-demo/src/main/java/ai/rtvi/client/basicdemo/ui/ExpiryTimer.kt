@@ -41,7 +41,7 @@ fun ExpiryTimer(
     Row(
         modifier = modifier
             .clip(shape)
-            .background(Colors.expiryTimerBackground)
+            .background(Colors.lightGrey)
             .padding(top = 12.dp, bottom = 12.dp, start = 12.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
