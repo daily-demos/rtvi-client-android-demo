@@ -1,10 +1,16 @@
 package ai.rtvi.client.basicdemo.ui.theme
 
+import ai.rtvi.client.basicdemo.R
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+
+object TextStyles {
+    val base = TextStyle(fontFamily = FontFamily(Font(R.font.inter)))
+}
 
 // Set of Material typography styles to start with
 val Typography = Typography(

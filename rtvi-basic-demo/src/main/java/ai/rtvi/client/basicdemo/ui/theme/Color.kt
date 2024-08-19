@@ -9,4 +9,7 @@ object Colors {
 
     val activityBackground = Color(0xFFF0F5FA)
     val mainSurfaceBackground = Color.White
+
+    val expiryTimerBackground = Color(0x7FE5E7EB)
+    val expiryTimerForeground = Color.Black
 }
