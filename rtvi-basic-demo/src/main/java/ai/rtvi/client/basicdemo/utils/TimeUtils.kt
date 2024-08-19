@@ -50,7 +50,7 @@ value class Timestamp(
 fun formatTimer(duration: Duration): String {
 
     if (duration.seconds < 0) {
-        return "0:00"
+        return "0s"
     }
 
     val mins = duration.seconds / 60

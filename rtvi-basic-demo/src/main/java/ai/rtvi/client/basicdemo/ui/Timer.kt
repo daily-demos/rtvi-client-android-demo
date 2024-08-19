@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.sp
 import java.time.Duration
 
 @Composable
-fun ExpiryTimer(
-    expiryTime: Timestamp,
+fun Timer(
+    startTime: Timestamp,
     modifier: Modifier,
 ) {
     val now by rtcStateSecs()
@@ -55,7 +55,7 @@ fun ExpiryTimer(
         Spacer(Modifier.width(8.dp))
 
         Text(
-            text = formatTimer(duration = expiryTime - now),
+            text = formatTimer(duration = now - startTime),
             fontSize = 16.sp,
             fontWeight = FontWeight.W600,
             color = Colors.expiryTimerForeground
@@ -66,5 +66,5 @@ fun ExpiryTimer(
 @Composable
 @Preview
 fun PreviewExpiryTimer() {
-    ExpiryTimer(Timestamp.now() + Duration.ofMinutes(5), Modifier)
+    Timer(Timestamp.now() + Duration.ofMinutes(5), Modifier)
 }

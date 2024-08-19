@@ -1,5 +1,6 @@
 package ai.rtvi.client.basicdemo
 
+import ai.rtvi.client.basicdemo.ui.InCallLayout
 import ai.rtvi.client.basicdemo.ui.theme.Colors
 import ai.rtvi.client.basicdemo.ui.theme.RTVIClientTheme
 import ai.rtvi.client.basicdemo.ui.theme.textFieldColors
@@ -85,32 +86,54 @@ class MainActivity : ComponentActivity() {
 
             RTVIClientTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(scrollState)
-                            .imePadding()
-                            .padding(innerPadding)
-                            .padding(20.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
+
+                val vcState = voiceClientManager.state.value
+
+                if (vcState != null) {
+                    Box(Modifier.fillMaxSize().padding(innerPadding)) {
+                        InCallLayout(
+                            onClickEnd = voiceClientManager::stop,
+                            onClickMic = voiceClientManager::toggleMic,
+                            onClickCam = voiceClientManager::toggleCamera,
+                            startTime = voiceClientManager.startTime,
+                            botIsTalking = voiceClientManager.botIsTalking,
+                            botAudioLevel = voiceClientManager.botAudioLevel,
+                            userIsTalking = voiceClientManager.userIsTalking,
+                            userAudioLevel = voiceClientManager.userAudioLevel,
+                            userMicEnabled = voiceClientManager.mic.value,
+                            userCamEnabled = voiceClientManager.camera.value
+                        )
+                    }
+                } else {
                         Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .shadow(2.dp, RoundedCornerShape(16.dp))
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Colors.mainSurfaceBackground)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(scrollState)
+                                .imePadding()
+                                .padding(innerPadding)
+                                .padding(20.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Column(
+
+
+                            Box(
                                 Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        vertical = 24.dp,
-                                        horizontal = 28.dp
-                                    )
-                                    .animateContentSize()
+                                    .shadow(2.dp, RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Colors.mainSurfaceBackground)
                             ) {
-                                MainContent(voiceClientManager)
+                                Column(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            vertical = 24.dp,
+                                            horizontal = 28.dp
+                                        )
+                                        .animateContentSize()
+                                ) {
+                                    MainContent(voiceClientManager)
+                                }
                             }
                         }
                     }
@@ -155,8 +178,6 @@ fun ColumnScope.MainContent(voiceClientManager: VoiceClientManager) {
         ErrorScreen(voiceClientManager, error.description)
     } else if (state == null) {
         ConnectSettings(voiceClientManager, baseUrl)
-    } else {
-        ConnectedScreen(voiceClientManager)
     }
 }
 

@@ -41,11 +41,11 @@ private fun FooterButton(
 
     Row(
         modifier
-            .clickable(onClick = onClick)
             .border(1.dp, border, shape)
             .clip(shape)
             .background(background)
-            .padding(vertical = 10.dp, horizontal = 24.dp),
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp, horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -56,11 +56,11 @@ private fun FooterButton(
             contentDescription = null
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         Text(
             text = text,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.W600,
             color = foreground
         )
@@ -72,7 +72,6 @@ fun InCallFooter(
     onClickCommands: () -> Unit,
     onClickEnd: () -> Unit,
 ) {
-
     Row(Modifier
         .fillMaxWidth()
         .padding(15.dp)
@@ -97,7 +96,7 @@ fun InCallFooter(
             text = "End",
             foreground = Color.White,
             background = Colors.endButton,
-            border = Colors.lightGrey
+            border = Colors.endButton
         )
     }
 }
