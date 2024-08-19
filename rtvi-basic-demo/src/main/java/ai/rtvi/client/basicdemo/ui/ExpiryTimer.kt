@@ -27,7 +27,10 @@ import androidx.compose.ui.unit.sp
 import java.time.Duration
 
 @Composable
-fun ExpiryTimer(expiryTime: Timestamp) {
+fun ExpiryTimer(
+    expiryTime: Timestamp,
+    modifier: Modifier,
+) {
     val now by rtcStateSecs()
 
     val shape = RoundedCornerShape(
@@ -36,7 +39,7 @@ fun ExpiryTimer(expiryTime: Timestamp) {
     )
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clip(shape)
             .background(Colors.expiryTimerBackground)
             .padding(top = 12.dp, bottom = 12.dp, start = 12.dp, end = 16.dp),
@@ -63,5 +66,5 @@ fun ExpiryTimer(expiryTime: Timestamp) {
 @Composable
 @Preview
 fun PreviewExpiryTimer() {
-    ExpiryTimer(Timestamp.now() + Duration.ofMinutes(5))
+    ExpiryTimer(Timestamp.now() + Duration.ofMinutes(5), Modifier)
 }

@@ -1,6 +1,7 @@
 [versions]
 accompanistPermissions = "0.34.0"
 agp = "8.5.1"
+constraintlayoutCompose = "1.0.1"
 rtviClientDaily = "0.1.1"
 kotlin = "2.0.0"
 coreKtx = "1.13.1"
@@ -10,6 +11,7 @@ composeBom = "2024.06.00"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
+androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 rtvi-client-daily = { module = "ai.rtvi:client-daily", version.ref = "rtviClientDaily" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
