@@ -31,15 +31,21 @@ fun ListeningAnimation(
         label = "listeningAnimationLoopState"
     )
 
-    val activeFraction by animateFloatAsState(if (active) level else 0f)
+    val activeFraction by animateFloatAsState(
+        if (active) {
+            Math.pow(level.toDouble(), 0.3).toFloat()
+        } else {
+            0f
+        }
+    )
 
-    Canvas(modifier.clearAndSetSemantics {  }) {
+    Canvas(modifier.clearAndSetSemantics { }) {
 
         val strokeWidthPx = size.width / 12
 
         val lineCount = 5
 
-        for (i in 1 .. lineCount) {
+        for (i in 1..lineCount) {
 
             val sine = Math.sin(loopState + 0.9 * i)
             val fraction = activeFraction * ((sine + 1) / 2).toFloat()

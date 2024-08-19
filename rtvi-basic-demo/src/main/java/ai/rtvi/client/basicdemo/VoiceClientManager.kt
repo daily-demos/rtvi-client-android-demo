@@ -175,6 +175,14 @@ class VoiceClientManager(private val context: Context) {
                 client.value?.release()
                 client.value = null
             }
+
+            override fun onUserAudioLevel(level: Float) {
+                clientUserAudioLevel.floatValue = level
+            }
+
+            override fun onRemoteAudioLevel(level: Float, participant: Participant) {
+                clientBotAudioLevel.floatValue = level
+            }
         }
 
         val client = DailyVoiceClient(context, baseUrl, callbacks, options)

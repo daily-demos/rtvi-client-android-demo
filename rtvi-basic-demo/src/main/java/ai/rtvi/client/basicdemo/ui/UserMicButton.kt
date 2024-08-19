@@ -40,7 +40,7 @@ fun UserMicButton(
         contentAlignment = Alignment.Center
     ) {
         val borderThickness by animateDpAsState(if (isTalking.value) {
-            (18.dp * audioLevel.floatValue) + 3.dp
+            (24.dp * Math.pow(audioLevel.floatValue.toDouble(), 0.3).toFloat()) + 3.dp
         } else {
             6.dp
         })
