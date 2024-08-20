@@ -4,6 +4,8 @@ import ai.rtvi.client.basicdemo.VoiceClientManager
 import ai.rtvi.client.basicdemo.ui.theme.Colors
 import ai.rtvi.client.basicdemo.ui.theme.TextStyles
 import ai.rtvi.client.basicdemo.ui.theme.textFieldColors
+import ai.rtvi.client.result.Result
+import ai.rtvi.client.result.VoiceError
 import ai.rtvi.client.types.Type
 import ai.rtvi.client.types.Value
 import androidx.compose.animation.animateColorAsState
@@ -36,6 +38,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +46,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+
+@OptIn(ExperimentalSerializationApi::class)
+private val JSON_PRETTY = Json {
+    prettyPrint = true
+    prettyPrintIndent = " "
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,7 +122,8 @@ fun InCallLayout(voiceClientManager: VoiceClientManager) {
 @Composable
 fun ActionList(voiceClientManager: VoiceClientManager) {
 
-    val resultDialogText = remember { mutableStateListOf<String>() }
+    val resultDialogText: SnapshotStateList<Result<Value, VoiceError>> =
+        remember { mutableStateListOf() }
 
     val actions = voiceClientManager.actionDescriptions.value?.valueOrNull ?: emptyList()
 
@@ -171,7 +182,7 @@ fun ActionList(voiceClientManager: VoiceClientManager) {
                                             args = arguments
                                         )
                                         ?.withCallback {
-                                            resultDialogText.add(it.toString())
+                                            resultDialogText.add(it)
                                         }
                                 }
                                 .padding(8.dp)
@@ -313,7 +324,12 @@ fun ActionList(voiceClientManager: VoiceClientManager) {
                 Text(text = "Action result", fontSize = 20.sp, fontWeight = FontWeight.W700)
             },
             text = {
-                Text(text = it, fontSize = 16.sp)
+                Text(text = when (it) {
+                    is Result.Err -> "Error: ${it.error.description}"
+                    is Result.Ok -> {
+                        JSON_PRETTY.encodeToString(Value.serializer(), it.value)
+                    }
+                }, fontSize = 16.sp)
             }
         )
     }
