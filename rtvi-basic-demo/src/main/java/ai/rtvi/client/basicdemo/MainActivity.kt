@@ -2,23 +2,18 @@ package ai.rtvi.client.basicdemo
 
 import ai.rtvi.client.basicdemo.ui.InCallLayout
 import ai.rtvi.client.basicdemo.ui.Logo
+import ai.rtvi.client.basicdemo.ui.PermissionScreen
 import ai.rtvi.client.basicdemo.ui.theme.Colors
 import ai.rtvi.client.basicdemo.ui.theme.RTVIClientTheme
 import ai.rtvi.client.basicdemo.ui.theme.TextStyles
 import ai.rtvi.client.basicdemo.ui.theme.textFieldColors
-import ai.rtvi.client.result.Future
-import ai.rtvi.client.result.Result
 import ai.rtvi.client.types.ActionDescription
 import ai.rtvi.client.types.Type
 import ai.rtvi.client.types.Value
-import android.Manifest
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,7 +46,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,10 +62,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 
 class MainActivity : ComponentActivity() {
 
@@ -80,6 +70,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val voiceClientManager = VoiceClientManager(this)
+
+        val baseUrl = mutableStateOf("")
 
         setContent {
             RTVIClientTheme {
@@ -94,24 +86,9 @@ class MainActivity : ComponentActivity() {
                         val vcState = voiceClientManager.state.value
 
                         if (vcState != null) {
-
-                            InCallLayout(
-                                onClickEnd = voiceClientManager::stop,
-                                onClickMic = voiceClientManager::toggleMic,
-                                onClickCam = voiceClientManager::toggleCamera,
-                                startTime = voiceClientManager.startTime,
-                                botIsReady = voiceClientManager.botReady,
-                                botIsTalking = voiceClientManager.botIsTalking,
-                                botAudioLevel = voiceClientManager.botAudioLevel,
-                                userIsTalking = voiceClientManager.userIsTalking,
-                                userAudioLevel = voiceClientManager.userAudioLevel,
-                                userMicEnabled = voiceClientManager.mic.value,
-                                userCamEnabled = voiceClientManager.camera.value
-                            )
+                            InCallLayout(voiceClientManager)
 
                         } else {
-
-                            val baseUrl = remember { mutableStateOf("") }
                             ConnectSettings(voiceClientManager, baseUrl)
                         }
 
@@ -126,8 +103,9 @@ class MainActivity : ComponentActivity() {
                                         Text(
                                             text = "OK",
                                             fontSize = 14.sp,
-                                            fontWeight = FontWeight.W400,
-                                            color = Color.White
+                                            fontWeight = FontWeight.W700,
+                                            color = Color.White,
+                                            style = TextStyles.base
                                         )
                                     }
                                 },
@@ -137,7 +115,8 @@ class MainActivity : ComponentActivity() {
                                         text = "Error",
                                         fontSize = 22.sp,
                                         fontWeight = FontWeight.W600,
-                                        color = Color.Black
+                                        color = Color.Black,
+                                        style = TextStyles.base
                                     )
                                 },
                                 text = {
@@ -145,7 +124,8 @@ class MainActivity : ComponentActivity() {
                                         text = errorText.message,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.W400,
-                                        color = Color.Black
+                                        color = Color.Black,
+                                        style = TextStyles.base
                                     )
                                 }
                             )
@@ -243,74 +223,6 @@ fun ConnectSettings(
                 ) {
                     Text(
                         text = "Connect",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.W700,
-                        style = TextStyles.base
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun PermissionScreen() {
-    val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
-    val micPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
-
-    val requestPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { isGranted ->
-        Log.i("MainActivity", "Permissions granted: $isGranted")
-    }
-
-    if (!cameraPermission.status.isGranted || !micPermission.status.isGranted) {
-
-        Dialog(
-            onDismissRequest = {},
-        ) {
-            val dialogShape = RoundedCornerShape(16.dp)
-
-            Column(Modifier
-                .shadow(6.dp, dialogShape)
-                .border(2.dp, Colors.logoBorder, dialogShape)
-                .clip(dialogShape)
-                .background(Color.White)
-                .padding(28.dp)
-            ) {
-                Text(
-                    text = "Permissions",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.W700,
-                    style = TextStyles.base
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Please grant camera and mic permissions to continue",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W400,
-                    style = TextStyles.base
-                )
-
-                Spacer(modifier = Modifier.height(36.dp))
-
-                Button(
-                    modifier = Modifier.align(Alignment.End),
-                    shape = RoundedCornerShape(12.dp),
-                    onClick = {
-                        requestPermissionLauncher.launch(
-                            arrayOf(
-                                Manifest.permission.CAMERA,
-                                Manifest.permission.RECORD_AUDIO
-                            )
-                        )
-                    }
-                ) {
-                    Text(
-                        text = "Grant permissions",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.W700,
                         style = TextStyles.base
@@ -434,17 +346,6 @@ fun ColumnScope.ActionList(
                 Text(text = it, fontSize = 16.sp)
             }
         )
-    }
-}
-
-@Composable
-fun <V, E> Future<V, E>.observeAsState(): State<Result<V, E>?> {
-    return remember(this) {
-        mutableStateOf<Result<V, E>?>(null).apply {
-            withCallback {
-                value = it
-            }
-        }
     }
 }
 
