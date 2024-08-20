@@ -6,7 +6,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -30,8 +29,7 @@ fun Logo(modifier: Modifier) {
             .shadow(5.dp, shape)
             .border(1.dp, Colors.logoBorder, shape)
             .clip(shape)
-            .background(Color.White)
-            .padding(top = 12.dp, bottom = 12.dp, start = 12.dp, end = 16.dp),
+            .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
         Image(

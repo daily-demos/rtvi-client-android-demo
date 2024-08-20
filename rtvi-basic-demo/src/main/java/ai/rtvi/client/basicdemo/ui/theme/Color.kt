@@ -14,6 +14,7 @@ object Colors {
     val expiryTimerForeground = Color.Black
     val logoBorder = Color(0xFFE2E8F0)
     val endButton = Color(0xFF0F172A)
+    val textFieldBorder = Color(0xFFDFE6EF)
 
     val botIndicatorBackground = Color(0xFF374151)
     val mutedMicBackground = Color(0xFFF04A4A)

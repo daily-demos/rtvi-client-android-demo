@@ -1,8 +1,10 @@
 package ai.rtvi.client.basicdemo
 
 import ai.rtvi.client.basicdemo.ui.InCallLayout
+import ai.rtvi.client.basicdemo.ui.Logo
 import ai.rtvi.client.basicdemo.ui.theme.Colors
 import ai.rtvi.client.basicdemo.ui.theme.RTVIClientTheme
+import ai.rtvi.client.basicdemo.ui.theme.TextStyles
 import ai.rtvi.client.basicdemo.ui.theme.textFieldColors
 import ai.rtvi.client.result.Future
 import ai.rtvi.client.result.Result
@@ -18,7 +20,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -62,9 +64,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -78,18 +82,19 @@ class MainActivity : ComponentActivity() {
         val voiceClientManager = VoiceClientManager(this)
 
         setContent {
-            val scrollState = rememberScrollState()
-
             RTVIClientTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        PermissionScreen()
 
-                    val vcState = voiceClientManager.state.value
+                        val vcState = voiceClientManager.state.value
 
-                    if (vcState != null) {
-                        Box(
-                            Modifier
-                                .fillMaxSize()
-                                .padding(innerPadding)) {
+                        if (vcState != null) {
+
                             InCallLayout(
                                 onClickEnd = voiceClientManager::stop,
                                 onClickMic = voiceClientManager::toggleMic,
@@ -103,76 +108,145 @@ class MainActivity : ComponentActivity() {
                                 userMicEnabled = voiceClientManager.mic.value,
                                 userCamEnabled = voiceClientManager.camera.value
                             )
+
+                        } else {
+
+                            val baseUrl = remember { mutableStateOf("") }
+                            ConnectSettings(voiceClientManager, baseUrl)
                         }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(scrollState)
-                                .imePadding()
-                                .padding(innerPadding)
-                                .padding(20.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
 
+                        voiceClientManager.errors.firstOrNull()?.let { errorText ->
 
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .shadow(2.dp, RoundedCornerShape(16.dp))
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(Colors.mainSurfaceBackground)
-                            ) {
-                                Column(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(
-                                            vertical = 24.dp,
-                                            horizontal = 28.dp
+                            val dismiss: () -> Unit = { voiceClientManager.errors.removeFirst() }
+
+                            AlertDialog(
+                                onDismissRequest = dismiss,
+                                confirmButton = {
+                                    Button(onClick = dismiss) {
+                                        Text(
+                                            text = "OK",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W400,
+                                            color = Color.White
                                         )
-                                        .animateContentSize()
-                                ) {
-                                    MainContent(voiceClientManager)
-                                }
-                            }
-                        }
-                    }
-
-                    voiceClientManager.errors.firstOrNull()?.let { errorText ->
-
-                        val dismiss: () -> Unit = { voiceClientManager.errors.removeFirst() }
-
-                        AlertDialog(
-                            onDismissRequest = dismiss,
-                            confirmButton = {
-                                Button(onClick = dismiss) {
+                                    }
+                                },
+                                containerColor = Color.White,
+                                title = {
                                     Text(
-                                        text = "OK",
-                                        fontSize = 14.sp,
+                                        text = "Error",
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.W600,
+                                        color = Color.Black
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        text = errorText.message,
+                                        fontSize = 16.sp,
                                         fontWeight = FontWeight.W400,
-                                        color = Color.White
+                                        color = Color.Black
                                     )
                                 }
-                            },
-                            containerColor = Color.White,
-                            title = {
-                                Text(
-                                    text = "Error",
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.W600,
-                                    color = Color.Black
-                                )
-                            },
-                            text = {
-                                Text(
-                                    text = errorText.message,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.W400,
-                                    color = Color.Black
-                                )
-                            }
-                        )
+                            )
+                        }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConnectSettings(
+    voiceClientManager: VoiceClientManager,
+    baseUrl: MutableState<String>
+) {
+    val scrollState = rememberScrollState()
+
+    val start = { voiceClientManager.start(baseUrl.value) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .imePadding()
+            .padding(20.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .shadow(2.dp, RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
+                .background(Colors.mainSurfaceBackground)
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = 24.dp,
+                        horizontal = 28.dp
+                    )
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, bottom = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Logo(Modifier)
+                }
+
+                Text(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    text = "Connect to an RTVI server",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.W700,
+                    style = TextStyles.base
+                )
+
+                Spacer(modifier = Modifier.height(36.dp))
+
+                Text(
+                    text = "Backend URL",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W700,
+                    style = TextStyles.base
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Colors.textFieldBorder, RoundedCornerShape(12.dp)),
+                    value = baseUrl.value,
+                    onValueChange = { baseUrl.value = it },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Uri,
+                        imeAction = ImeAction.Go
+                    ),
+                    colors = textFieldColors(),
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardActions = KeyboardActions(
+                        onDone = { start() }
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Button(
+                    modifier = Modifier.align(Alignment.End),
+                    onClick = start,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Connect",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.W700,
+                        style = TextStyles.base
+                    )
                 }
             }
         }
@@ -181,14 +255,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ColumnScope.MainContent(voiceClientManager: VoiceClientManager) {
-
-    val baseUrl = remember {
-        mutableStateOf("")
-    }
-
-    val state = voiceClientManager.state.value
-
+fun PermissionScreen() {
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
     val micPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
@@ -199,91 +266,58 @@ fun ColumnScope.MainContent(voiceClientManager: VoiceClientManager) {
     }
 
     if (!cameraPermission.status.isGranted || !micPermission.status.isGranted) {
-        PermissionScreen(
-            grantPermissions = {
-                requestPermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.RECORD_AUDIO
-                    )
+
+        Dialog(
+            onDismissRequest = {},
+        ) {
+            val dialogShape = RoundedCornerShape(16.dp)
+
+            Column(Modifier
+                .shadow(6.dp, dialogShape)
+                .border(2.dp, Colors.logoBorder, dialogShape)
+                .clip(dialogShape)
+                .background(Color.White)
+                .padding(28.dp)
+            ) {
+                Text(
+                    text = "Permissions",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.W700,
+                    style = TextStyles.base
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Please grant camera and mic permissions to continue",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W400,
+                    style = TextStyles.base
+                )
+
+                Spacer(modifier = Modifier.height(36.dp))
+
+                Button(
+                    modifier = Modifier.align(Alignment.End),
+                    shape = RoundedCornerShape(12.dp),
+                    onClick = {
+                        requestPermissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.CAMERA,
+                                Manifest.permission.RECORD_AUDIO
+                            )
+                        )
+                    }
+                ) {
+                    Text(
+                        text = "Grant permissions",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.W700,
+                        style = TextStyles.base
+                    )
+                }
             }
-        )
-    } else if (state == null) {
-        ConnectSettings(voiceClientManager, baseUrl)
-    }
-}
-
-@Composable
-fun ColumnScope.ConnectSettings(
-    voiceClientManager: VoiceClientManager,
-    baseUrl: MutableState<String>
-) {
-    Text(
-        text = "Connect to an RTVI server",
-        fontSize = 22.sp,
-        fontWeight = FontWeight.W700
-    )
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    Text(
-        text = "Backend URL",
-        fontSize = 18.sp
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        value = baseUrl.value,
-        onValueChange = { baseUrl.value = it },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Uri
-        ),
-        colors = textFieldColors()
-    )
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    Button(
-        modifier = Modifier.align(Alignment.End),
-        onClick = { voiceClientManager.start(baseUrl.value) }
-    ) {
-        Text(
-            text = "Connect",
-            fontSize = 16.sp
-        )
-    }
-}
-
-@Composable
-fun ColumnScope.PermissionScreen(
-    grantPermissions: () -> Unit
-) {
-    Text(
-        text = "Permissions",
-        fontSize = 24.sp,
-        fontWeight = FontWeight.W700
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = "Please grant camera and mic permissions to continue",
-        fontSize = 18.sp
-    )
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    Button(
-        modifier = Modifier.align(Alignment.End),
-        onClick = grantPermissions
-    ) {
-        Text(
-            text = "Grant permissions",
-            fontSize = 16.sp
-        )
+        }
     }
 }
 
