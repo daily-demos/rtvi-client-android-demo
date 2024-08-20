@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
 }
 
@@ -74,6 +75,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.kotlinx.serialization.json)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

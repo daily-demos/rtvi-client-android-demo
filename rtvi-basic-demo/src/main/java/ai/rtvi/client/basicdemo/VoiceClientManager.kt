@@ -74,7 +74,7 @@ class VoiceClientManager(private val context: Context) {
     
     val errors = mutableStateListOf<Error>()
     
-    val aactionDescriptions =
+    val actionDescriptions =
         mutableStateOf<Result<List<ActionDescription>, VoiceError>?>(null)
     val startTime = mutableStateOf<Timestamp?>(null)
 
@@ -119,7 +119,7 @@ class VoiceClientManager(private val context: Context) {
                 botReady.value = true
 
                 client.value?.describeActions()?.withCallback {
-                    aactionDescriptions.value = it
+                    actionDescriptions.value = it
                 }
             }
 
@@ -166,11 +166,11 @@ class VoiceClientManager(private val context: Context) {
 
             override fun onDisconnected() {
                 startTime.value = null
-                aactionDescriptions.value = null
+                actionDescriptions.value = null
                 botIsTalking.value = false
                 userIsTalking.value = false
                 state.value = null
-                aactionDescriptions.value = null
+                actionDescriptions.value = null
                 botReady.value = false
 
                 client.value?.release()
