@@ -18,6 +18,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField(
+            "String",
+            "RTVI_AUTH_KEY",
+            (System.getenv("RTVI_AUTH_KEY") ?: "").let { "\"$it\"" }
+        )
     }
 
     buildTypes {
@@ -41,6 +47,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {

@@ -54,7 +54,13 @@ class VoiceClientManager(private val context: Context) {
                         )
                     )
                 )
-            )
+            ),
+            // Note: For security reasons, don't include your API key in a production
+            // client app. See: https://docs.dailybots.ai/architecture
+            customHeaders = BuildConfig.RTVI_AUTH_KEY
+                .takeUnless { it.isEmpty() }
+                ?.let { listOf("Authorization" to "Bearer $it") }
+                ?: emptyList()
         )
     }
 
