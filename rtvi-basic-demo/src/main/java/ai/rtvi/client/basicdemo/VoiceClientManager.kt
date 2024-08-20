@@ -5,6 +5,7 @@ import ai.rtvi.client.VoiceClientOptions
 import ai.rtvi.client.VoiceEventCallbacks
 import ai.rtvi.client.basicdemo.utils.Timestamp
 import ai.rtvi.client.daily.DailyVoiceClient
+import ai.rtvi.client.result.Future
 import ai.rtvi.client.result.Result
 import ai.rtvi.client.result.VoiceError
 import ai.rtvi.client.types.ActionDescription
@@ -18,11 +19,14 @@ import ai.rtvi.client.types.TransportState
 import ai.rtvi.client.types.Value
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.FloatState
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+
+@Immutable
+data class Error(val message: String)
 
 @Stable
 class VoiceClientManager(private val context: Context) {
@@ -66,35 +70,27 @@ class VoiceClientManager(private val context: Context) {
 
     private val client = mutableStateOf<VoiceClient?>(null)
 
-    private val clientState = mutableStateOf<TransportState?>(null)
-    private val clientError = mutableStateOf<VoiceError?>(null)
-    private val clientActionDescriptions =
+    val state = mutableStateOf<TransportState?>(null)
+    
+    val errors = mutableStateListOf<Error>()
+    
+    val aactionDescriptions =
         mutableStateOf<Result<List<ActionDescription>, VoiceError>?>(null)
-    private val clientStartTime = mutableStateOf<Timestamp?>(null)
+    val startTime = mutableStateOf<Timestamp?>(null)
 
-    private val clientBotReady = mutableStateOf(false)
-    private val clientBotIsTalking = mutableStateOf(false)
-    private val clientUserIsTalking = mutableStateOf(false)
-    private val clientBotAudioLevel = mutableFloatStateOf(0f)
-    private val clientUserAudioLevel = mutableFloatStateOf(0f)
+    val botReady = mutableStateOf(false)
+    val botIsTalking = mutableStateOf(false)
+    val userIsTalking = mutableStateOf(false)
+    val botAudioLevel = mutableFloatStateOf(0f)
+    val userAudioLevel = mutableFloatStateOf(0f)
 
-    private val clientMic = mutableStateOf(false)
-    private val clientCamera = mutableStateOf(false)
+    val mic = mutableStateOf(false)
+    val camera = mutableStateOf(false)
 
-    val state: State<TransportState?> = clientState
-    val error: State<VoiceError?> = clientError
-    val actionDescriptions: State<Result<List<ActionDescription>, VoiceError>?> =
-        clientActionDescriptions
-    val startTime: State<Timestamp?> = clientStartTime
-
-    val botReady: State<Boolean> = clientBotReady
-    val botIsTalking: State<Boolean> = clientBotIsTalking
-    val userIsTalking: State<Boolean> = clientUserIsTalking
-    val botAudioLevel: FloatState = clientBotAudioLevel
-    val userAudioLevel: FloatState = clientUserAudioLevel
-
-    val mic: State<Boolean> = clientMic
-    val camera: State<Boolean> = clientCamera
+    private fun <E> Future<E, VoiceError>.displayErrors() = withErrorCallback {
+        Log.e(TAG, "Future resolved with error: ${it.description}", it.exception)
+        errors.add(Error(it.description))
+    }
 
     fun start(baseUrl: String) {
 
@@ -102,25 +98,28 @@ class VoiceClientManager(private val context: Context) {
             return
         }
 
-        clientState.value = TransportState.Idle
+        state.value = TransportState.Idle
 
         val callbacks = object : VoiceEventCallbacks() {
             override fun onTransportStateChanged(state: TransportState) {
-                clientState.value = state
+                this@VoiceClientManager.state.value = state
             }
 
             override fun onBackendError(message: String) {
-                Log.e(TAG, "Error from backend: $message")
+                "Error from backend: $message".let {
+                    Log.e(TAG, it)
+                    errors.add(Error(it))
+                }
             }
 
             override fun onBotReady(version: String, config: List<ServiceConfig>) {
 
                 Log.i(TAG, "Bot ready. Version $version, config: $config")
 
-                clientBotReady.value = true
+                botReady.value = true
 
                 client.value?.describeActions()?.withCallback {
-                    clientActionDescriptions.value = it
+                    aactionDescriptions.value = it
                 }
             }
 
@@ -138,60 +137,58 @@ class VoiceClientManager(private val context: Context) {
 
             override fun onBotStartedSpeaking() {
                 Log.i(TAG, "Bot started speaking")
-                clientBotIsTalking.value = true
+                botIsTalking.value = true
             }
 
             override fun onBotStoppedSpeaking() {
                 Log.i(TAG, "Bot stopped speaking")
-                clientBotIsTalking.value = false
+                botIsTalking.value = false
             }
 
             override fun onUserStartedSpeaking() {
                 Log.i(TAG, "User started speaking")
-                clientUserIsTalking.value = true
+                userIsTalking.value = true
             }
 
             override fun onUserStoppedSpeaking() {
                 Log.i(TAG, "User stopped speaking")
-                clientUserIsTalking.value = false
+                userIsTalking.value = false
             }
 
             override fun onInputsUpdated(camera: Boolean, mic: Boolean) {
-                clientCamera.value = camera
-                clientMic.value = mic
+                this@VoiceClientManager.camera.value = camera
+                this@VoiceClientManager.mic.value = mic
             }
 
             override fun onConnected() {
-                clientStartTime.value = Timestamp.now()
+                startTime.value = Timestamp.now()
             }
 
             override fun onDisconnected() {
-                clientStartTime.value = null
-                clientActionDescriptions.value = null
-                clientBotIsTalking.value = false
-                clientUserIsTalking.value = false
-                clientError.value = null
-                clientState.value = null
-                clientActionDescriptions.value = null
-                clientBotReady.value = false
+                startTime.value = null
+                aactionDescriptions.value = null
+                botIsTalking.value = false
+                userIsTalking.value = false
+                state.value = null
+                aactionDescriptions.value = null
+                botReady.value = false
 
                 client.value?.release()
                 client.value = null
             }
 
             override fun onUserAudioLevel(level: Float) {
-                clientUserAudioLevel.floatValue = level
+                userAudioLevel.floatValue = level
             }
 
             override fun onRemoteAudioLevel(level: Float, participant: Participant) {
-                clientBotAudioLevel.floatValue = level
+                botAudioLevel.floatValue = level
             }
         }
 
         val client = DailyVoiceClient(context, baseUrl, callbacks, options)
 
-        client.start().withErrorCallback {
-            clientError.value = it
+        client.start().displayErrors().withErrorCallback {
             callbacks.onDisconnected()
         }
 
@@ -199,23 +196,23 @@ class VoiceClientManager(private val context: Context) {
     }
 
     fun enableCamera(enabled: Boolean) {
-        client.value?.enableCam(enabled)
+        client.value?.enableCam(enabled)?.displayErrors()
     }
 
     fun enableMic(enabled: Boolean) {
-        client.value?.enableMic(enabled)
+        client.value?.enableMic(enabled)?.displayErrors()
     }
 
     fun toggleCamera() = enableCamera(!camera.value)
     fun toggleMic() = enableMic(!mic.value)
 
     fun stop() {
-        client.value?.disconnect()
+        client.value?.disconnect()?.displayErrors()
     }
 
     fun action(service: String, action: String, args: Map<String, Value>) =
         client.value?.action(
             service = service,
             action = action,
-            arguments = args.map { Option(it.key, it.value) })
+            arguments = args.map { Option(it.key, it.value) })?.displayErrors()
 }

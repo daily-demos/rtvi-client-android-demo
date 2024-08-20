@@ -21,12 +21,9 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,7 +42,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -87,25 +83,28 @@ class MainActivity : ComponentActivity() {
             RTVIClientTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                val vcState = voiceClientManager.state.value
+                    val vcState = voiceClientManager.state.value
 
-                if (vcState != null) {
-                    Box(Modifier.fillMaxSize().padding(innerPadding)) {
-                        InCallLayout(
-                            onClickEnd = voiceClientManager::stop,
-                            onClickMic = voiceClientManager::toggleMic,
-                            onClickCam = voiceClientManager::toggleCamera,
-                            startTime = voiceClientManager.startTime,
-                            botIsReady = voiceClientManager.botReady,
-                            botIsTalking = voiceClientManager.botIsTalking,
-                            botAudioLevel = voiceClientManager.botAudioLevel,
-                            userIsTalking = voiceClientManager.userIsTalking,
-                            userAudioLevel = voiceClientManager.userAudioLevel,
-                            userMicEnabled = voiceClientManager.mic.value,
-                            userCamEnabled = voiceClientManager.camera.value
-                        )
-                    }
-                } else {
+                    if (vcState != null) {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)) {
+                            InCallLayout(
+                                onClickEnd = voiceClientManager::stop,
+                                onClickMic = voiceClientManager::toggleMic,
+                                onClickCam = voiceClientManager::toggleCamera,
+                                startTime = voiceClientManager.startTime,
+                                botIsReady = voiceClientManager.botReady,
+                                botIsTalking = voiceClientManager.botIsTalking,
+                                botAudioLevel = voiceClientManager.botAudioLevel,
+                                userIsTalking = voiceClientManager.userIsTalking,
+                                userAudioLevel = voiceClientManager.userAudioLevel,
+                                userMicEnabled = voiceClientManager.mic.value,
+                                userCamEnabled = voiceClientManager.camera.value
+                            )
+                        }
+                    } else {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -138,6 +137,42 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+
+                    voiceClientManager.errors.firstOrNull()?.let { errorText ->
+
+                        val dismiss: () -> Unit = { voiceClientManager.errors.removeFirst() }
+
+                        AlertDialog(
+                            onDismissRequest = dismiss,
+                            confirmButton = {
+                                Button(onClick = dismiss) {
+                                    Text(
+                                        text = "OK",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.W400,
+                                        color = Color.White
+                                    )
+                                }
+                            },
+                            containerColor = Color.White,
+                            title = {
+                                Text(
+                                    text = "Error",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.W600,
+                                    color = Color.Black
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = errorText.message,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.W400,
+                                    color = Color.Black
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -153,7 +188,6 @@ fun ColumnScope.MainContent(voiceClientManager: VoiceClientManager) {
     }
 
     val state = voiceClientManager.state.value
-    val error = voiceClientManager.error.value
 
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
     val micPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
@@ -175,8 +209,6 @@ fun ColumnScope.MainContent(voiceClientManager: VoiceClientManager) {
                 )
             }
         )
-    } else if (error != null) {
-        ErrorScreen(voiceClientManager, error.description)
     } else if (state == null) {
         ConnectSettings(voiceClientManager, baseUrl)
     }
@@ -220,126 +252,6 @@ fun ColumnScope.ConnectSettings(
     ) {
         Text(
             text = "Connect",
-            fontSize = 16.sp
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun ColumnScope.ConnectedScreen(
-    voiceClientManager: VoiceClientManager
-) {
-    val state by voiceClientManager.state
-
-    val mic by voiceClientManager.mic
-    val camera by voiceClientManager.camera
-
-    Text(
-        text = "RTVI session",
-        fontSize = 24.sp,
-        fontWeight = FontWeight.W700
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = "Status: ${state?.name}",
-        fontSize = 18.sp
-    )
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    FlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-
-        TextButton(
-            onClick = { voiceClientManager.enableMic(!mic) },
-            text = if (mic) "Mic on" else "Mic off",
-            icon = if (mic) R.drawable.microphone else R.drawable.microphone_off
-        )
-
-        TextButton(
-            onClick = { voiceClientManager.enableCamera(!camera) },
-            text = if (camera) "Cam on" else "Cam off",
-            icon = if (camera) R.drawable.video else R.drawable.video_off
-        )
-
-        TextButton(
-            onClick = { voiceClientManager.stop() },
-            text = "Disconnect",
-            icon = R.drawable.phone_hangup,
-            type = ButtonType.Warning
-        )
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    HorizontalDivider()
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    val showActions = remember { mutableStateOf(false) }
-
-    SectionButton(
-        expanded = showActions,
-        textExpanded = "Hide actions",
-        textCollapsed = "Show actions",
-    )
-
-    if (showActions.value) {
-        val actionsDesc = voiceClientManager.actionDescriptions.value
-
-        when (actionsDesc) {
-            is Result.Err -> Text(
-                text = "Failed to fetch actions: ${actionsDesc.error}",
-                fontSize = 14.sp
-            )
-
-            is Result.Ok -> ActionList(
-                voiceClientManager = voiceClientManager,
-                actions = actionsDesc.value
-            )
-
-            null -> {
-                Text(
-                    text = "Fetching actions...",
-                    fontSize = 14.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ColumnScope.ErrorScreen(
-    voiceClientManager: VoiceClientManager,
-    error: String
-) {
-    Text(
-        text = "Error",
-        fontSize = 24.sp,
-        fontWeight = FontWeight.W700
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = error,
-        fontSize = 18.sp
-    )
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    Button(
-        modifier = Modifier.align(Alignment.End),
-        onClick = { voiceClientManager.stop() }
-    ) {
-        Text(
-            text = "Disconnect",
             fontSize = 16.sp
         )
     }
