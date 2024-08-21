@@ -39,9 +39,9 @@ class VoiceClientManager(private val context: Context) {
     private val client = mutableStateOf<VoiceClient?>(null)
 
     val state = mutableStateOf<TransportState?>(null)
-    
+
     val errors = mutableStateListOf<Error>()
-    
+
     val actionDescriptions =
         mutableStateOf<Result<List<ActionDescription>, VoiceError>?>(null)
 
@@ -101,7 +101,11 @@ class VoiceClientManager(private val context: Context) {
             customHeaders = apiKey
                 ?.takeUnless { it.isEmpty() }
                 ?.let { listOf("Authorization" to "Bearer $it") }
-                ?: emptyList()
+                ?: emptyList(),
+            customBodyParams = listOf(
+                "bot_profile" to Value.Str("voice_2024_08"),
+                "max_duration" to Value.Number(680.0)
+            )
         )
 
         state.value = TransportState.Idle
