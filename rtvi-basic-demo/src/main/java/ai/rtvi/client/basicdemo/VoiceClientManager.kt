@@ -34,39 +34,6 @@ class VoiceClientManager(private val context: Context) {
 
     companion object {
         private const val TAG = "VoiceClientManager"
-
-        private val options = VoiceClientOptions(
-            services = listOf(
-                ServiceRegistration("tts", "cartesia"),
-                ServiceRegistration("llm", "together"),
-            ),
-            config = listOf(
-                ServiceConfig(
-                    "tts", listOf(
-                        Option("voice", "79a125e8-cd45-4c13-8a67-188112f4dd22")
-                    )
-                ),
-                ServiceConfig(
-                    "llm", listOf(
-                        Option("model", "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"),
-                        Option(
-                            "initial_messages", Value.Array(
-                                Value.Object(
-                                    "role" to Value.Str("system"),
-                                    "content" to Value.Str("You are a helpful voice assistant.")
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            // Note: For security reasons, don't include your API key in a production
-            // client app. See: https://docs.dailybots.ai/architecture
-            customHeaders = BuildConfig.RTVI_AUTH_KEY
-                .takeUnless { it.isEmpty() }
-                ?.let { listOf("Authorization" to "Bearer $it") }
-                ?: emptyList()
-        )
     }
 
     private val client = mutableStateOf<VoiceClient?>(null)
@@ -95,11 +62,47 @@ class VoiceClientManager(private val context: Context) {
         errors.add(Error(it.description))
     }
 
-    fun start(baseUrl: String) {
+    fun start(
+        baseUrl: String,
+        apiKey: String?,
+    ) {
 
         if (client.value != null) {
             return
         }
+
+        val options = VoiceClientOptions(
+            services = listOf(
+                ServiceRegistration("tts", "cartesia"),
+                ServiceRegistration("llm", "together"),
+            ),
+            config = listOf(
+                ServiceConfig(
+                    "tts", listOf(
+                        Option("voice", "79a125e8-cd45-4c13-8a67-188112f4dd22")
+                    )
+                ),
+                ServiceConfig(
+                    "llm", listOf(
+                        Option("model", "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"),
+                        Option(
+                            "initial_messages", Value.Array(
+                                Value.Object(
+                                    "role" to Value.Str("system"),
+                                    "content" to Value.Str("You are a helpful voice assistant.")
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            // Note: For security reasons, don't include your API key in a production
+            // client app. See: https://docs.dailybots.ai/architecture
+            customHeaders = apiKey
+                ?.takeUnless { it.isEmpty() }
+                ?.let { listOf("Authorization" to "Bearer $it") }
+                ?: emptyList()
+        )
 
         state.value = TransportState.Idle
 

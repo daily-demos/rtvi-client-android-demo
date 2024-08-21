@@ -32,8 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,8 +51,6 @@ class MainActivity : ComponentActivity() {
 
         val voiceClientManager = VoiceClientManager(this)
 
-        val baseUrl = mutableStateOf("")
-
         setContent {
             RTVIClientTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -71,7 +67,7 @@ class MainActivity : ComponentActivity() {
                             InCallLayout(voiceClientManager)
 
                         } else {
-                            ConnectSettings(voiceClientManager, baseUrl)
+                            ConnectSettings(voiceClientManager)
                         }
 
                         voiceClientManager.errors.firstOrNull()?.let { errorText ->
@@ -122,11 +118,18 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ConnectSettings(
     voiceClientManager: VoiceClientManager,
-    baseUrl: MutableState<String>
 ) {
     val scrollState = rememberScrollState()
 
-    val start = { voiceClientManager.start(baseUrl.value) }
+    val start = {
+        val backendUrl = Preferences.backendUrl.value
+        val apiKey = Preferences.apiKey.value
+
+        voiceClientManager.start(
+            baseUrl = backendUrl ?: "",
+            apiKey = apiKey
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -183,10 +186,35 @@ fun ConnectSettings(
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(1.dp, Colors.textFieldBorder, RoundedCornerShape(12.dp)),
-                    value = baseUrl.value,
-                    onValueChange = { baseUrl.value = it },
+                    value = Preferences.backendUrl.value ?: "",
+                    onValueChange = { Preferences.backendUrl.value = it },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Uri,
+                        imeAction = ImeAction.Next
+                    ),
+                    colors = textFieldColors(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = "Daily API key",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W400,
+                    style = TextStyles.base
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Colors.textFieldBorder, RoundedCornerShape(12.dp)),
+                    value = Preferences.apiKey.value ?: "",
+                    onValueChange = { Preferences.apiKey.value = it },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Go
                     ),
                     colors = textFieldColors(),
