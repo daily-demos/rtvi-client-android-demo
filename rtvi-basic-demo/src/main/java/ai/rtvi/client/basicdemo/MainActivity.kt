@@ -43,6 +43,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+
+private const val DEFAULT_BACKEND = "https://api.daily.co/v1/bots/start"
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -126,7 +129,7 @@ fun ConnectSettings(
         val apiKey = Preferences.apiKey.value
 
         voiceClientManager.start(
-            baseUrl = backendUrl ?: "",
+            baseUrl = backendUrl ?: DEFAULT_BACKEND,
             apiKey = apiKey
         )
     }
@@ -186,7 +189,7 @@ fun ConnectSettings(
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(1.dp, Colors.textFieldBorder, RoundedCornerShape(12.dp)),
-                    value = Preferences.backendUrl.value ?: "",
+                    value = Preferences.backendUrl.value ?: DEFAULT_BACKEND,
                     onValueChange = { Preferences.backendUrl.value = it },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Uri,
