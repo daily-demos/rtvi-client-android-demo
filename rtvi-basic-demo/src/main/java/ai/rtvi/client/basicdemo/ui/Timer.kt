@@ -29,7 +29,7 @@ import java.time.Duration
 
 @Composable
 fun Timer(
-    startTime: Timestamp,
+    expiryTime: Timestamp,
     modifier: Modifier,
 ) {
     val now by rtcStateSecs()
@@ -57,7 +57,7 @@ fun Timer(
         Spacer(Modifier.width(8.dp))
 
         Text(
-            text = formatTimer(duration = now - startTime),
+            text = formatTimer(duration = expiryTime - now),
             fontSize = 16.sp,
             fontWeight = FontWeight.W600,
             color = Colors.expiryTimerForeground

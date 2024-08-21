@@ -8,9 +8,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -18,11 +15,12 @@ import androidx.constraintlayout.compose.ConstraintLayout
 
 @Composable
 fun InCallHeader(
-    startTime: State<Timestamp?>
+    expiryTime: Timestamp?
 ) {
-
     ConstraintLayout(
-        Modifier.fillMaxWidth().padding(vertical = 15.dp)
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 15.dp)
     ) {
         val (refLogo, refTimer) = createRefs()
 
@@ -38,11 +36,11 @@ fun InCallHeader(
                 bottom.linkTo(parent.bottom)
                 end.linkTo(parent.end)
             },
-            targetState = startTime.value,
+            targetState = expiryTime,
             transitionSpec = { fadeIn() togetherWith fadeOut() }
-        ) { startTimeVal ->
-            if (startTimeVal != null) {
-                Timer(startTimeVal, Modifier)
+        ) { expiryTimeVal ->
+            if (expiryTimeVal != null) {
+                Timer(expiryTime = expiryTimeVal, modifier = Modifier)
             }
         }
     }
@@ -52,6 +50,6 @@ fun InCallHeader(
 @Preview
 fun PreviewInCallHeader() {
     InCallHeader(
-        remember { mutableStateOf(Timestamp.now() + java.time.Duration.ofMinutes(3)) }
+        Timestamp.now() + java.time.Duration.ofMinutes(3)
     )
 }

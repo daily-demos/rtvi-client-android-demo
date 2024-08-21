@@ -32,6 +32,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -61,9 +62,11 @@ fun InCallLayout(voiceClientManager: VoiceClientManager) {
 
     var commandsExpanded by remember { mutableStateOf(false) }
 
+    val localCam by remember { derivedStateOf { voiceClientManager.tracks.value?.local?.video } }
+
     Column(Modifier.fillMaxSize()) {
 
-        InCallHeader(startTime = voiceClientManager.startTime)
+        InCallHeader(expiryTime = voiceClientManager.expiryTime.value)
 
         Box(
             modifier = Modifier
@@ -97,6 +100,7 @@ fun InCallLayout(voiceClientManager: VoiceClientManager) {
                     UserCamButton(
                         onClick = voiceClientManager::toggleCamera,
                         camEnabled = voiceClientManager.camera.value,
+                        camTrackId = localCam,
                         modifier = Modifier
                     )
                 }
