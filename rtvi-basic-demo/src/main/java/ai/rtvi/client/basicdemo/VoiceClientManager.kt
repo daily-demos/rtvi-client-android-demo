@@ -14,6 +14,7 @@ import ai.rtvi.client.types.Participant
 import ai.rtvi.client.types.PipecatMetrics
 import ai.rtvi.client.types.ServiceConfig
 import ai.rtvi.client.types.ServiceRegistration
+import ai.rtvi.client.types.Tracks
 import ai.rtvi.client.types.Transcript
 import ai.rtvi.client.types.TransportState
 import ai.rtvi.client.types.Value
@@ -76,7 +77,8 @@ class VoiceClientManager(private val context: Context) {
     
     val actionDescriptions =
         mutableStateOf<Result<List<ActionDescription>, VoiceError>?>(null)
-    val startTime = mutableStateOf<Timestamp?>(null)
+
+    val expiryTime = mutableStateOf<Timestamp?>(null)
 
     val botReady = mutableStateOf(false)
     val botIsTalking = mutableStateOf(false)
@@ -86,6 +88,7 @@ class VoiceClientManager(private val context: Context) {
 
     val mic = mutableStateOf(false)
     val camera = mutableStateOf(false)
+    val tracks = mutableStateOf<Tracks?>(null)
 
     private fun <E> Future<E, VoiceError>.displayErrors() = withErrorCallback {
         Log.e(TAG, "Future resolved with error: ${it.description}", it.exception)
@@ -155,23 +158,28 @@ class VoiceClientManager(private val context: Context) {
                 userIsTalking.value = false
             }
 
+            override fun onTracksUpdated(tracks: Tracks) {
+                this@VoiceClientManager.tracks.value = tracks
+            }
+
             override fun onInputsUpdated(camera: Boolean, mic: Boolean) {
                 this@VoiceClientManager.camera.value = camera
                 this@VoiceClientManager.mic.value = mic
             }
 
             override fun onConnected() {
-                startTime.value = Timestamp.now()
+                expiryTime.value = client.value?.expiry?.let(Timestamp::ofEpochSecs)
             }
 
             override fun onDisconnected() {
-                startTime.value = null
+                expiryTime.value = null
                 actionDescriptions.value = null
                 botIsTalking.value = false
                 userIsTalking.value = false
                 state.value = null
                 actionDescriptions.value = null
                 botReady.value = false
+                tracks.value = null
 
                 client.value?.release()
                 client.value = null
