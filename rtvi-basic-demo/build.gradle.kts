@@ -19,12 +19,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-        buildConfigField(
-            "String",
-            "RTVI_AUTH_KEY",
-            (System.getenv("RTVI_AUTH_KEY") ?: "").let { "\"$it\"" }
-        )
     }
 
     buildTypes {
@@ -64,7 +58,6 @@ android {
 
 dependencies {
     implementation(libs.rtvi.client.daily)
-    //implementation(project(":rtvi-client-android-daily"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
