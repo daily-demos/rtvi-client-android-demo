@@ -89,10 +89,11 @@ class VoiceClientManager(private val context: Context) {
                             "initial_messages", Value.Array(
                                 Value.Object(
                                     "role" to Value.Str("system"),
-                                    "content" to Value.Str("You are a helpful voice assistant.")
+                                    "content" to Value.Str("You are a helpful voice assistant. Do not include markdown or other formatting in your responses, as they will be read out using TTS.")
                                 )
                             )
-                        )
+                        ),
+                        Option("run_on_config", true),
                     )
                 )
             ),
