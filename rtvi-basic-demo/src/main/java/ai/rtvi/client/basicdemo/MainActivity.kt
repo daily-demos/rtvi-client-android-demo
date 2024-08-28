@@ -3,6 +3,7 @@ package ai.rtvi.client.basicdemo
 import ai.rtvi.client.basicdemo.ui.InCallLayout
 import ai.rtvi.client.basicdemo.ui.Logo
 import ai.rtvi.client.basicdemo.ui.PermissionScreen
+import ai.rtvi.client.basicdemo.ui.VoiceClientSettingsPanel
 import ai.rtvi.client.basicdemo.ui.theme.Colors
 import ai.rtvi.client.basicdemo.ui.theme.RTVIClientTheme
 import ai.rtvi.client.basicdemo.ui.theme.TextStyles
@@ -11,16 +12,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,15 +35,24 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -118,11 +134,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectSettings(
     voiceClientManager: VoiceClientManager,
 ) {
     val scrollState = rememberScrollState()
+
+    var settingsExpanded by remember { mutableStateOf(false) }
+
+    val initOptions = remember { mutableStateOf(VoiceClientManager.InitOptions.default()) }
+    val runtimeOptions = remember { mutableStateOf(VoiceClientManager.RuntimeOptions.default()) }
 
     val start = {
         val backendUrl = Preferences.backendUrl.value
@@ -130,7 +152,9 @@ fun ConnectSettings(
 
         voiceClientManager.start(
             baseUrl = backendUrl ?: DEFAULT_BACKEND,
-            apiKey = apiKey
+            apiKey = apiKey,
+            initOptions = initOptions.value,
+            runtimeOptions = runtimeOptions.value
         )
     }
 
@@ -227,21 +251,85 @@ fun ConnectSettings(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(36.dp))
 
-                Button(
-                    modifier = Modifier.align(Alignment.End),
-                    onClick = start,
-                    shape = RoundedCornerShape(12.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(
+
+                    ConnectDialogButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = { settingsExpanded = true },
+                        text = "Settings",
+                        foreground = Color.Black,
+                        background = Color.White,
+                        border = Colors.textFieldBorder,
+                        icon = R.drawable.cog
+                    )
+
+                    ConnectDialogButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = start,
                         text = "Connect",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.W700,
-                        style = TextStyles.base
+                        foreground = Color.White,
+                        background = Colors.buttonNormal,
+                        border = Colors.buttonNormal
                     )
                 }
             }
         }
+    }
+
+    if (settingsExpanded) {
+        ModalBottomSheet(
+            onDismissRequest = { settingsExpanded = false },
+            containerColor = Colors.activityBackground,
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            VoiceClientSettingsPanel(initOptions = initOptions, runtimeOptions = runtimeOptions)
+        }
+    }
+}
+
+@Composable
+private fun ConnectDialogButton(
+    onClick: () -> Unit,
+    text: String,
+    foreground: Color,
+    background: Color,
+    border: Color,
+    modifier: Modifier = Modifier,
+    @DrawableRes icon: Int? = null,
+) {
+    val shape = RoundedCornerShape(8.dp)
+
+    Row(
+        modifier
+            .border(1.dp, border, shape)
+            .clip(shape)
+            .background(background)
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp, horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        if (icon != null) {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(icon),
+                tint = foreground,
+                contentDescription = null
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        Text(
+            text = text,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = foreground
+        )
     }
 }
