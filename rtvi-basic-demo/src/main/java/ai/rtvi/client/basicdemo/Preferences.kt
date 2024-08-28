@@ -13,7 +13,7 @@ object Preferences {
 
     private const val PREF_BACKEND_URL = "backend_url"
     private const val PREF_API_KEY = "api_key"
-    private const val PREF_LAST_INIT_OPTIONS = "last_init_options"
+    private const val PREF_INIT_OPTIONS = "init_options"
 
     private lateinit var prefs: SharedPreferences
 
@@ -76,7 +76,7 @@ object Preferences {
 
     val backendUrl = StringPref(PREF_BACKEND_URL)
     val apiKey = StringPref(PREF_API_KEY)
-    val lastInitOptions = JsonPref(PREF_LAST_INIT_OPTIONS, LastInitOptions.serializer())
+    val lastInitOptions = JsonPref(PREF_INIT_OPTIONS, LastInitOptions.serializer())
 }
 
 @Serializable
