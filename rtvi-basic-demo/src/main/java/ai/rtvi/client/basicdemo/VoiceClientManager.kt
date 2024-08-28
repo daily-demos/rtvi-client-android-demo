@@ -101,23 +101,23 @@ class VoiceClientManager(private val context: Context) {
 
         val options = VoiceClientOptions(
             services = listOf(
-                ServiceRegistration("tts", "cartesia"),
-                ServiceRegistration("llm", "together"),
+                ServiceRegistration("tts", initOptions.ttsProvider.id),
+                ServiceRegistration("llm", initOptions.llmProvider.id),
             ),
             config = listOf(
                 ServiceConfig(
                     "tts", listOf(
-                        Option("voice", "79a125e8-cd45-4c13-8a67-188112f4dd22")
+                        Option("voice", runtimeOptions.ttsVoice.id)
                     )
                 ),
                 ServiceConfig(
                     "llm", listOf(
-                        Option("model", "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"),
+                        Option("model", runtimeOptions.llmModel.id),
                         Option(
                             "initial_messages", Value.Array(
                                 Value.Object(
                                     "role" to Value.Str("system"),
-                                    "content" to Value.Str("You are a helpful voice assistant. Do not include markdown or other formatting in your responses, as they will be read out using TTS.")
+                                    "content" to Value.Str("You are a helpful voice assistant. Do not include markdown or other formatting in your responses, as they will be read out using TTS. Please greet the user and offer to assist them.")
                                 )
                             )
                         ),
@@ -133,7 +133,7 @@ class VoiceClientManager(private val context: Context) {
                 ?: emptyList(),
             customBodyParams = listOf(
                 "bot_profile" to Value.Str("voice_2024_08"),
-                "max_duration" to Value.Number(680.0)
+                "max_duration" to Value.Number(600.0)
             )
         )
 
