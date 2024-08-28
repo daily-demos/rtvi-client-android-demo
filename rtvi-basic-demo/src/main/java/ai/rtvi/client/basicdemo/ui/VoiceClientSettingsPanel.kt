@@ -2,6 +2,7 @@ package ai.rtvi.client.basicdemo.ui
 
 import ai.rtvi.client.basicdemo.ConfigConstants
 import ai.rtvi.client.basicdemo.NamedOption
+import ai.rtvi.client.basicdemo.NamedOptionList
 import ai.rtvi.client.basicdemo.VoiceClientManager
 import ai.rtvi.client.basicdemo.ui.theme.Colors
 import ai.rtvi.client.basicdemo.ui.theme.RTVIClientTheme
@@ -56,7 +57,7 @@ fun VoiceClientSettingsPanel(
             label = "Service",
             onSelect = { initOptions.update { copy(ttsProvider = it) } },
             selected = initOptions.value.ttsProvider,
-            options = ConfigConstants.ttsProviders
+            options = ConfigConstants.ttsProviders,
         )
 
         RadioGroup(
@@ -104,7 +105,7 @@ private fun <E : NamedOption> ColumnScope.RadioGroup(
     label: String,
     onSelect: (E) -> Unit,
     selected: E,
-    options: List<E>,
+    options: NamedOptionList<E>,
 ) {
     Spacer(Modifier.height(20.dp))
 
@@ -128,7 +129,7 @@ private fun <E : NamedOption> ColumnScope.RadioGroup(
     ) {
         var first = true
 
-        for (option in options) {
+        for (option in options.options) {
 
             if (first) {
                 first = false
@@ -159,8 +160,8 @@ private fun <E : NamedOption> ColumnScope.RadioGroup(
     }
 
     LaunchedEffect(onSelect, selected, options) {
-        if (options.isNotEmpty() && !options.contains(selected)) {
-            onSelect(options.first())
+        if (!options.options.contains(selected)) {
+            onSelect(options.default)
         }
     }
 }
