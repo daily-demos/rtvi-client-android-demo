@@ -43,8 +43,8 @@ class VoiceClientManager(private val context: Context) {
     ) {
         companion object {
             fun default() = InitOptions(
-                ttsProvider = ConfigConstants.Cartesia,
-                llmProvider = ConfigConstants.Together,
+                ttsProvider = ConfigConstants.ttsProviders.default,
+                llmProvider = ConfigConstants.llmProviders.default,
             )
         }
     }
@@ -56,8 +56,8 @@ class VoiceClientManager(private val context: Context) {
     ) {
         companion object {
             fun default() = RuntimeOptions(
-                ttsVoice = ConfigConstants.Cartesia.voices.first(),
-                llmModel = ConfigConstants.Together.Llama70B,
+                ttsVoice = ConfigConstants.ttsProviders.default.voices.default,
+                llmModel = ConfigConstants.llmProviders.default.models.default,
             )
         }
     }
