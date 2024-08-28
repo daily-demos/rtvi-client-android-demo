@@ -145,21 +145,19 @@ fun ConnectSettings(
 
     val lastInitOptions = Preferences.lastInitOptions
 
-    val initOptions = remember { mutableStateOf(lastInitOptions.value?.inflateInit() ?: VoiceClientManager.InitOptions.default()) }
+    val initOptions = lastInitOptions.value?.inflateInit() ?: VoiceClientManager.InitOptions.default()
 
-    val runtimeOptions = remember { mutableStateOf(lastInitOptions.value?.inflateRuntime(initOptions.value) ?: VoiceClientManager.RuntimeOptions.default()) }
+    val runtimeOptions = lastInitOptions.value?.inflateRuntime(initOptions) ?: VoiceClientManager.RuntimeOptions.default()
 
     val start = {
         val backendUrl = Preferences.backendUrl.value
         val apiKey = Preferences.apiKey.value
 
-        lastInitOptions.value = LastInitOptions.from(initOptions.value, runtimeOptions.value)
-
         voiceClientManager.start(
             baseUrl = backendUrl ?: DEFAULT_BACKEND,
             apiKey = apiKey,
-            initOptions = initOptions.value,
-            runtimeOptions = runtimeOptions.value
+            initOptions = initOptions,
+            runtimeOptions = runtimeOptions
         )
     }
 
