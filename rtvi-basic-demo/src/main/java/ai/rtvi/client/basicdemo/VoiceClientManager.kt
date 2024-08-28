@@ -36,6 +36,32 @@ class VoiceClientManager(private val context: Context) {
         private const val TAG = "VoiceClientManager"
     }
 
+    @Immutable
+    data class InitOptions(
+        val ttsProvider: TTSProvider,
+        val llmProvider: LLMProvider,
+    ) {
+        companion object {
+            fun default() = InitOptions(
+                ttsProvider = ConfigConstants.Cartesia,
+                llmProvider = ConfigConstants.Together,
+            )
+        }
+    }
+
+    @Immutable
+    data class RuntimeOptions(
+        val ttsVoice: TTSOptionVoice,
+        val llmModel: LLMOptionModel,
+    ) {
+        companion object {
+            fun default() = RuntimeOptions(
+                ttsVoice = ConfigConstants.Cartesia.voices.first(),
+                llmModel = ConfigConstants.Together.Llama70B,
+            )
+        }
+    }
+
     private val client = mutableStateOf<VoiceClient?>(null)
 
     val state = mutableStateOf<TransportState?>(null)
@@ -65,6 +91,8 @@ class VoiceClientManager(private val context: Context) {
     fun start(
         baseUrl: String,
         apiKey: String?,
+        initOptions: InitOptions,
+        runtimeOptions: RuntimeOptions,
     ) {
 
         if (client.value != null) {
