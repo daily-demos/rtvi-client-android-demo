@@ -1,8 +1,10 @@
 package ai.rtvi.client.basicdemo.ui
 
 import ai.rtvi.client.basicdemo.ConfigConstants
+import ai.rtvi.client.basicdemo.LastInitOptions
 import ai.rtvi.client.basicdemo.NamedOption
 import ai.rtvi.client.basicdemo.NamedOptionList
+import ai.rtvi.client.basicdemo.Preferences
 import ai.rtvi.client.basicdemo.VoiceClientManager
 import ai.rtvi.client.basicdemo.ui.theme.Colors
 import ai.rtvi.client.basicdemo.ui.theme.RTVIClientTheme
@@ -25,10 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,47 +39,54 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun VoiceClientSettingsPanel(
-    initOptions: MutableState<VoiceClientManager.InitOptions>,
-    runtimeOptions: MutableState<VoiceClientManager.RuntimeOptions>,
+    initOptions: VoiceClientManager.InitOptions,
+    runtimeOptions: VoiceClientManager.RuntimeOptions,
 ) {
     val scrollState = rememberScrollState()
+
+    val pref = Preferences.lastInitOptions
+
+    fun updatePref(action: LastInitOptions.() -> LastInitOptions) {
+        pref.value = action(pref.value ?: LastInitOptions.from(initOptions, runtimeOptions))
+    }
 
     Column(
         Modifier
             .fillMaxWidth()
             .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp)) {
+            .padding(horizontal = 20.dp)
+    ) {
 
         Header("Text to Speech")
 
         RadioGroup(
             label = "Service",
-            onSelect = { initOptions.update { copy(ttsProvider = it) } },
-            selected = initOptions.value.ttsProvider,
+            onSelect = { updatePref { copy(ttsProvider = it.id) } },
+            selected = initOptions.ttsProvider,
             options = ConfigConstants.ttsProviders,
         )
 
         RadioGroup(
             label = "Voice",
-            onSelect = { runtimeOptions.update { copy(ttsVoice = it) } },
-            selected = runtimeOptions.value.ttsVoice,
-            options = initOptions.value.ttsProvider.voices
+            onSelect = { updatePref { copy(ttsVoice = it.id) } },
+            selected = runtimeOptions.ttsVoice,
+            options = initOptions.ttsProvider.voices
         )
 
         Header("Language Model")
 
         RadioGroup(
             label = "Service",
-            onSelect = { initOptions.update { copy(llmProvider = it) } },
-            selected = initOptions.value.llmProvider,
+            onSelect = { updatePref { copy(llmProvider = it.id) } },
+            selected = initOptions.llmProvider,
             options = ConfigConstants.llmProviders
         )
 
         RadioGroup(
             label = "Model",
-            onSelect = { runtimeOptions.update { copy(llmModel = it) } },
-            selected = runtimeOptions.value.llmModel,
-            options = initOptions.value.llmProvider.models
+            onSelect = { updatePref { copy(llmModel = it.id) } },
+            selected = runtimeOptions.llmModel,
+            options = initOptions.llmProvider.models
         )
 
         Spacer(Modifier.height(36.dp))
@@ -158,12 +164,6 @@ private fun <E : NamedOption> ColumnScope.RadioGroup(
             }
         }
     }
-
-    LaunchedEffect(onSelect, selected, options) {
-        if (!options.options.contains(selected)) {
-            onSelect(options.default)
-        }
-    }
 }
 
 private fun <E> MutableState<E>.update(action: E.() -> E) {
@@ -175,8 +175,8 @@ private fun <E> MutableState<E>.update(action: E.() -> E) {
 private fun PreviewVoiceClientSettingsPanel() {
     RTVIClientTheme {
         VoiceClientSettingsPanel(
-            initOptions = remember { mutableStateOf(VoiceClientManager.InitOptions.default()) },
-            runtimeOptions = remember { mutableStateOf(VoiceClientManager.RuntimeOptions.default()) }
+            initOptions = VoiceClientManager.InitOptions.default(),
+            runtimeOptions = VoiceClientManager.RuntimeOptions.default()
         )
     }
 }
