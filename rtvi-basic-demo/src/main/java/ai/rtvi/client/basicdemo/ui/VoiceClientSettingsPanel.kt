@@ -56,6 +56,8 @@ fun VoiceClientSettingsPanel(
             .verticalScroll(scrollState)
             .padding(horizontal = 20.dp)
     ) {
+        Header("Bot Configuration")
+
         RadioGroup(
             label = "Bot Profile",
             onSelect = { updatePref { copy(botProfile = it.id) } },
@@ -69,7 +71,7 @@ fun VoiceClientSettingsPanel(
             label = "Service",
             onSelect = { updatePref { copy(ttsProvider = it.id) } },
             selected = initOptions.ttsProvider,
-            options = ConfigConstants.ttsProviders,
+            options = initOptions.botProfile.ttsProviders,
         )
 
         RadioGroup(
@@ -85,7 +87,7 @@ fun VoiceClientSettingsPanel(
             label = "Service",
             onSelect = { updatePref { copy(llmProvider = it.id) } },
             selected = initOptions.llmProvider,
-            options = ConfigConstants.llmProviders
+            options = initOptions.botProfile.llmProviders
         )
 
         RadioGroup(
@@ -102,7 +104,7 @@ fun VoiceClientSettingsPanel(
 @Composable
 private fun ColumnScope.Header(text: String) {
 
-    Spacer(Modifier.height(30.dp))
+    Spacer(Modifier.height(42.dp))
 
     Text(
         text = text,
@@ -119,7 +121,7 @@ private fun <E : NamedOption> ColumnScope.RadioGroup(
     selected: E,
     options: NamedOptionList<E>,
 ) {
-    Spacer(Modifier.height(20.dp))
+    Spacer(Modifier.height(26.dp))
 
     Text(
         text = label,

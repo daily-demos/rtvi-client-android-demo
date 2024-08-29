@@ -97,11 +97,16 @@ data class LastInitOptions(
         )
     }
 
-    fun inflateInit() = VoiceClientManager.InitOptions(
-        botProfile = ConfigConstants.botProfiles.byIdOrDefault(botProfile),
-        ttsProvider = ConfigConstants.ttsProviders.byIdOrDefault(ttsProvider),
-        llmProvider = ConfigConstants.llmProviders.byIdOrDefault(llmProvider),
-    )
+    fun inflateInit(): VoiceClientManager.InitOptions {
+
+        val botProfile = ConfigConstants.botProfiles.byIdOrDefault(botProfile)
+
+        return VoiceClientManager.InitOptions(
+            botProfile = botProfile,
+            ttsProvider = botProfile.ttsProviders.byIdOrDefault(ttsProvider),
+            llmProvider = botProfile.llmProviders.byIdOrDefault(llmProvider),
+        )
+    }
 
     fun inflateRuntime(initOptions: VoiceClientManager.InitOptions) = VoiceClientManager.RuntimeOptions(
         ttsVoice = initOptions.ttsProvider.voices.byIdOrDefault(ttsVoice),

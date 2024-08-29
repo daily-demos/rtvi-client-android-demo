@@ -43,11 +43,13 @@ class VoiceClientManager(private val context: Context) {
         val llmProvider: LLMProvider,
     ) {
         companion object {
-            fun default() = InitOptions(
-                botProfile = ConfigConstants.botProfiles.default,
-                ttsProvider = ConfigConstants.ttsProviders.default,
-                llmProvider = ConfigConstants.llmProviders.default,
-            )
+            fun default() = ConfigConstants.botProfiles.default.let { botProfile ->
+                InitOptions(
+                    botProfile = botProfile,
+                    ttsProvider = botProfile.ttsProviders.default,
+                    llmProvider = botProfile.llmProviders.default,
+                )
+            }
         }
     }
 
@@ -57,10 +59,12 @@ class VoiceClientManager(private val context: Context) {
         val llmModel: LLMOptionModel,
     ) {
         companion object {
-            fun default() = RuntimeOptions(
-                ttsVoice = ConfigConstants.ttsProviders.default.voices.default,
-                llmModel = ConfigConstants.llmProviders.default.models.default,
-            )
+            fun default() = ConfigConstants.botProfiles.default.let { botProfile ->
+                RuntimeOptions(
+                    ttsVoice = botProfile.ttsProviders.default.voices.default,
+                    llmModel = botProfile.llmProviders.default.models.default,
+                )
+            }
         }
     }
 
