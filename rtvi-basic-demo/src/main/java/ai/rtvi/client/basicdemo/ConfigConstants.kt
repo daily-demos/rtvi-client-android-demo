@@ -46,14 +46,20 @@ object ConfigConstants {
         )
     }
 
-    val llmProviders = NamedOptionList<LLMProvider>(listOf(Anthropic, Together), default = Together)
-
-    val ttsProviders = NamedOptionList<TTSProvider>(listOf(Cartesia))
-
     val botProfiles = NamedOptionList(
         listOf(
-            "Voice only" isProfile "voice_2024_08",
-            "Voice and vision" isProfile "vision_2024_08"
+            BotProfile(
+                name = "Voice only",
+                id = "voice_2024_08",
+                llmProviders = NamedOptionList(listOf(Anthropic, Together), default = Together),
+                ttsProviders = NamedOptionList(listOf(Cartesia))
+            ),
+            BotProfile(
+                name = "Voice and vision",
+                id = "vision_2024_08",
+                llmProviders = NamedOptionList(listOf(Anthropic)),
+                ttsProviders = NamedOptionList(listOf(Cartesia))
+            ),
         )
     )
 }
@@ -87,6 +93,8 @@ interface LLMProvider : NamedOption {
 data class BotProfile(
     override val name: String,
     override val id: String,
+    val llmProviders: NamedOptionList<LLMProvider>,
+    val ttsProviders: NamedOptionList<TTSProvider>,
 ) : NamedOption
 
 data class LLMOptionModel(
@@ -101,4 +109,3 @@ data class TTSOptionVoice(
 
 private infix fun String.isModel(id: String) = LLMOptionModel(name = this, id = id)
 private infix fun String.isVoice(id: String) = TTSOptionVoice(name = this, id = id)
-private infix fun String.isProfile(id: String) = BotProfile(name = this, id = id)
