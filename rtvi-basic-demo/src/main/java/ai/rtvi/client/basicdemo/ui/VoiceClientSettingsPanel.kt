@@ -56,6 +56,12 @@ fun VoiceClientSettingsPanel(
             .verticalScroll(scrollState)
             .padding(horizontal = 20.dp)
     ) {
+        RadioGroup(
+            label = "Bot Profile",
+            onSelect = { updatePref { copy(botProfile = it.id) } },
+            selected = initOptions.botProfile,
+            options = ConfigConstants.botProfiles,
+        )
 
         Header("Text to Speech")
 

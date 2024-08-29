@@ -38,11 +38,13 @@ class VoiceClientManager(private val context: Context) {
 
     @Immutable
     data class InitOptions(
+        val botProfile: BotProfile,
         val ttsProvider: TTSProvider,
         val llmProvider: LLMProvider,
     ) {
         companion object {
             fun default() = InitOptions(
+                botProfile = ConfigConstants.botProfiles.default,
                 ttsProvider = ConfigConstants.ttsProviders.default,
                 llmProvider = ConfigConstants.llmProviders.default,
             )
@@ -117,7 +119,7 @@ class VoiceClientManager(private val context: Context) {
                             "initial_messages", Value.Array(
                                 Value.Object(
                                     "role" to Value.Str("system"),
-                                    "content" to Value.Str("You are a helpful voice assistant. Do not include markdown or other formatting in your responses, as they will be read out using TTS. Please greet the user and offer to assist them.")
+                                    "content" to Value.Str("You are a helpful voice assistant. Keep answers brief, and do not include markdown or other formatting in your responses, as they will be read out using TTS. Please greet the user and offer to assist them.")
                                 )
                             )
                         ),
@@ -132,7 +134,7 @@ class VoiceClientManager(private val context: Context) {
                 ?.let { listOf("Authorization" to "Bearer $it") }
                 ?: emptyList(),
             customBodyParams = listOf(
-                "bot_profile" to Value.Str("voice_2024_08"),
+                "bot_profile" to Value.Str(initOptions.botProfile.id),
                 "max_duration" to Value.Number(600.0)
             )
         )
