@@ -81,13 +81,15 @@ object Preferences {
 
 @Serializable
 data class LastInitOptions(
-    val ttsProvider: String,
-    val ttsVoice: String,
-    val llmProvider: String,
-    val llmModel: String,
+    val botProfile: String? = null,
+    val ttsProvider: String? = null,
+    val ttsVoice: String? = null,
+    val llmProvider: String? = null,
+    val llmModel: String? = null,
 ) {
     companion object {
         fun from(initOptions: VoiceClientManager.InitOptions, runtimeOptions: VoiceClientManager.RuntimeOptions) = LastInitOptions(
+            botProfile = initOptions.botProfile.id,
             ttsProvider = initOptions.ttsProvider.id,
             ttsVoice = runtimeOptions.ttsVoice.id,
             llmProvider = initOptions.llmProvider.id,
@@ -96,6 +98,7 @@ data class LastInitOptions(
     }
 
     fun inflateInit() = VoiceClientManager.InitOptions(
+        botProfile = ConfigConstants.botProfiles.byIdOrDefault(botProfile),
         ttsProvider = ConfigConstants.ttsProviders.byIdOrDefault(ttsProvider),
         llmProvider = ConfigConstants.llmProviders.byIdOrDefault(llmProvider),
     )
