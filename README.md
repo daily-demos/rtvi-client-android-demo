@@ -1,4 +1,4 @@
-# RTVI Android Client Daily Demo
+# Daily Bots Android Demo
 
 Demo app for connecting to a Daily Bots RTVI backend.
 
