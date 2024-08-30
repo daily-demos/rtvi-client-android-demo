@@ -34,10 +34,10 @@ jobs:
           java-version: '17'
 
       - name: Build demo app
-        run: ./gradlew :rtvi-basic-demo:assembleDebug
+        run: ./gradlew :daily-bots-android-demo:assembleDebug
 
       - name: Upload demo APK
         uses: actions/upload-artifact@v4
         with:
           name: Demo App (Debug)
-          path: rtvi-basic-demo/build/outputs/apk/debug/rtvi-basic-demo-debug.apk
+          path: daily-bots-android-demo/build/outputs/apk/debug/daily-bots-android-demo-debug.apk
