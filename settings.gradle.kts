@@ -19,8 +19,8 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RTVI Client Demo"
-include(":rtvi-basic-demo")
+rootProject.name = "Daily Bots Android Demo"
+include(":daily-bots-android-demo")
 
 /*
 include(":rtvi-client-android-daily")
