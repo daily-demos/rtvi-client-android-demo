@@ -86,6 +86,9 @@ data class LastInitOptions(
     val ttsVoice: String? = null,
     val llmProvider: String? = null,
     val llmModel: String? = null,
+    val sttProvider: String? = null,
+    val sttModel: String? = null,
+    val sttLanguage: String? = null,
 ) {
     companion object {
         fun from(initOptions: VoiceClientManager.InitOptions, runtimeOptions: VoiceClientManager.RuntimeOptions) = LastInitOptions(
@@ -105,11 +108,19 @@ data class LastInitOptions(
             botProfile = botProfile,
             ttsProvider = botProfile.ttsProviders.byIdOrDefault(ttsProvider),
             llmProvider = botProfile.llmProviders.byIdOrDefault(llmProvider),
+            sttProvider = botProfile.sttProviders.byIdOrDefault(sttProvider)
         )
     }
 
-    fun inflateRuntime(initOptions: VoiceClientManager.InitOptions) = VoiceClientManager.RuntimeOptions(
-        ttsVoice = initOptions.ttsProvider.voices.byIdOrDefault(ttsVoice),
-        llmModel = initOptions.llmProvider.models.byIdOrDefault(llmModel),
-    )
+    fun inflateRuntime(initOptions: VoiceClientManager.InitOptions): VoiceClientManager.RuntimeOptions {
+
+        val sttModelInstance = initOptions.sttProvider.models.byIdOrDefault(sttModel)
+
+        return VoiceClientManager.RuntimeOptions(
+            ttsVoice = initOptions.ttsProvider.voices.byIdOrDefault(ttsVoice),
+            llmModel = initOptions.llmProvider.models.byIdOrDefault(llmModel),
+            sttModel = sttModelInstance,
+            sttLanguage = sttModelInstance.languages.byIdOrDefault(sttLanguage)
+        )
+    }
 }

@@ -41,6 +41,7 @@ class VoiceClientManager(private val context: Context) {
         val botProfile: BotProfile,
         val ttsProvider: TTSProvider,
         val llmProvider: LLMProvider,
+        val sttProvider: STTProvider,
     ) {
         companion object {
             fun default() = ConfigConstants.botProfiles.default.let { botProfile ->
@@ -48,6 +49,7 @@ class VoiceClientManager(private val context: Context) {
                     botProfile = botProfile,
                     ttsProvider = botProfile.ttsProviders.default,
                     llmProvider = botProfile.llmProviders.default,
+                    sttProvider = botProfile.sttProviders.default
                 )
             }
         }
@@ -57,12 +59,16 @@ class VoiceClientManager(private val context: Context) {
     data class RuntimeOptions(
         val ttsVoice: TTSOptionVoice,
         val llmModel: LLMOptionModel,
+        val sttModel: STTOptionModel,
+        val sttLanguage: STTOptionLanguage,
     ) {
         companion object {
             fun default() = ConfigConstants.botProfiles.default.let { botProfile ->
                 RuntimeOptions(
                     ttsVoice = botProfile.ttsProviders.default.voices.default,
                     llmModel = botProfile.llmProviders.default.models.default,
+                    sttModel = botProfile.sttProviders.default.models.default,
+                    sttLanguage = botProfile.sttProviders.default.models.default.languages.default
                 )
             }
         }
@@ -109,6 +115,7 @@ class VoiceClientManager(private val context: Context) {
             services = listOf(
                 ServiceRegistration("tts", initOptions.ttsProvider.id),
                 ServiceRegistration("llm", initOptions.llmProvider.id),
+                ServiceRegistration("stt", initOptions.sttProvider.id),
             ),
             config = listOf(
                 ServiceConfig(
@@ -128,6 +135,12 @@ class VoiceClientManager(private val context: Context) {
                             )
                         ),
                         Option("run_on_config", true),
+                    )
+                ),
+                ServiceConfig(
+                    "stt", listOf(
+                        Option("model", runtimeOptions.sttModel.id),
+                        Option("language", runtimeOptions.sttLanguage.id),
                     )
                 )
             ),
