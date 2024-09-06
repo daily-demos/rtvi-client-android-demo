@@ -97,7 +97,30 @@ fun VoiceClientSettingsPanel(
             options = initOptions.llmProvider.models
         )
 
-        Spacer(Modifier.height(36.dp))
+        Header("Speech to Text")
+
+        RadioGroup(
+            label = "Service",
+            onSelect = { updatePref { copy(sttProvider = it.id) } },
+            selected = initOptions.sttProvider,
+            options = initOptions.botProfile.sttProviders
+        )
+
+        RadioGroup(
+            label = "Model",
+            onSelect = { updatePref { copy(sttModel = it.id) } },
+            selected = runtimeOptions.sttModel,
+            options = initOptions.sttProvider.models
+        )
+
+        RadioGroup(
+            label = "Language",
+            onSelect = { updatePref { copy(sttLanguage = it.id) } },
+            selected = runtimeOptions.sttLanguage,
+            options = runtimeOptions.sttModel.languages
+        )
+
+        Spacer(Modifier.height(48.dp))
     }
 }
 

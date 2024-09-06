@@ -7,11 +7,11 @@ object ConfigConstants {
     object Together : LLMProvider {
 
         val Llama8B =
-            "Llama 3.1 8B Instruct Turbo" isModel "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+            "Llama 3.1 8B Instruct Turbo" isLLMModel "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
         val Llama70B =
-            "Llama 3.1 70B Instruct Turbo" isModel "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+            "Llama 3.1 70B Instruct Turbo" isLLMModel "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
         val Llama405B =
-            "Llama 3.1 405B Instruct Turbo" isModel "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo"
+            "Llama 3.1 405B Instruct Turbo" isLLMModel "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo"
 
         override val name = "Together AI"
         override val id = "together"
@@ -26,7 +26,7 @@ object ConfigConstants {
         override val id = "anthropic"
 
         override val models =
-            NamedOptionList(listOf("Claude Sonnet 3.5" isModel "claude-3-5-sonnet-20240620"))
+            NamedOptionList(listOf("Claude Sonnet 3.5" isLLMModel "claude-3-5-sonnet-20240620"))
     }
 
     object Cartesia : TTSProvider {
@@ -46,19 +46,98 @@ object ConfigConstants {
         )
     }
 
+    object Deepgram : STTProvider {
+        override val name = "Deepgram"
+        override val id = "deepgram"
+
+        val English = "English" isSTTLang "en"
+
+        override val models = NamedOptionList(
+            listOf(
+                STTOptionModel(
+                    name = "Nova 2 Conversational AI (English)",
+                    id = "nova-2-conversationalai",
+                    languages = NamedOptionList(
+                        listOf("English" isSTTLang "en")
+                    )
+                ),
+                STTOptionModel(
+                    name = "Nova 2 General (Multilingual)",
+                    id = "nova-2-general",
+                    languages = NamedOptionList(
+                        listOf(
+                            "Bulgarian" isSTTLang "bg",
+                            "Catalan" isSTTLang "ca",
+                            "Chinese (Mandarin, Simplified)" isSTTLang "zh",
+                            "Chinese (Mandarin, Traditional)" isSTTLang "zh-TW",
+                            "Czech" isSTTLang "cs",
+                            "Danish" isSTTLang "da",
+                            "Danish" isSTTLang "da-DK",
+                            "Dutch" isSTTLang "nl",
+                            English,
+                            "English (US)" isSTTLang "en-US",
+                            "English (AU)" isSTTLang "en-AU",
+                            "English (GB)" isSTTLang "en-GB",
+                            "English (NZ)" isSTTLang "en-NZ",
+                            "English (IN)" isSTTLang "en-IN",
+                            "Estonian" isSTTLang "et",
+                            "Finnish" isSTTLang "fi",
+                            "Flemish" isSTTLang "nl-BE",
+                            "French" isSTTLang "fr",
+                            "French (CA)" isSTTLang "fr-CA",
+                            "German" isSTTLang "de",
+                            "German (Switzerland)" isSTTLang "de-CH",
+                            "Greek" isSTTLang "el",
+                            "Hindi" isSTTLang "hi",
+                            "Hungarian" isSTTLang "hu",
+                            "Indonesian" isSTTLang "id",
+                            "Italian" isSTTLang "it",
+                            "Japanese" isSTTLang "ja",
+                            "Korean" isSTTLang "ko",
+                            "Korean" isSTTLang "ko-KR",
+                            "Latvian" isSTTLang "lv",
+                            "Lithuanian" isSTTLang "lt",
+                            "Malay" isSTTLang "ms",
+                            "Multilingual (Spanish + English)" isSTTLang "multi",
+                            "Norwegian" isSTTLang "no",
+                            "Polish" isSTTLang "pl",
+                            "Portuguese" isSTTLang "pt",
+                            "Portuguese (BR)" isSTTLang "pt-BR",
+                            "Romanian" isSTTLang "ro",
+                            "Russian" isSTTLang "ru",
+                            "Slovak" isSTTLang "sk",
+                            "Spanish" isSTTLang "es",
+                            "Spanish (Latin America)" isSTTLang "es-419",
+                            "Swedish" isSTTLang "sv",
+                            "Swedish" isSTTLang "sv-SE",
+                            "Thai" isSTTLang "th",
+                            "Thai" isSTTLang "th-TH",
+                            "Turkish" isSTTLang "tr",
+                            "Ukrainian" isSTTLang "uk",
+                            "Vietnamese" isSTTLang "vi",
+                        ),
+                        default = English
+                    )
+                ),
+            )
+        )
+    }
+
     val botProfiles = NamedOptionList(
         listOf(
             BotProfile(
                 name = "Voice only",
                 id = "voice_2024_08",
                 llmProviders = NamedOptionList(listOf(Anthropic, Together), default = Together),
-                ttsProviders = NamedOptionList(listOf(Cartesia))
+                ttsProviders = NamedOptionList(listOf(Cartesia)),
+                sttProviders = NamedOptionList(listOf(Deepgram))
             ),
             BotProfile(
                 name = "Voice and vision",
                 id = "vision_2024_08",
                 llmProviders = NamedOptionList(listOf(Anthropic)),
-                ttsProviders = NamedOptionList(listOf(Cartesia))
+                ttsProviders = NamedOptionList(listOf(Cartesia)),
+                sttProviders = NamedOptionList(listOf(Deepgram))
             ),
         )
     )
@@ -78,6 +157,12 @@ interface NamedOption {
     val id: String
 }
 
+interface STTProvider : NamedOption {
+    override val name: String
+    override val id: String
+    val models: NamedOptionList<STTOptionModel>
+}
+
 interface TTSProvider : NamedOption {
     override val name: String
     override val id: String
@@ -95,6 +180,18 @@ data class BotProfile(
     override val id: String,
     val llmProviders: NamedOptionList<LLMProvider>,
     val ttsProviders: NamedOptionList<TTSProvider>,
+    val sttProviders: NamedOptionList<STTProvider>,
+) : NamedOption
+
+data class STTOptionModel(
+    override val name: String,
+    override val id: String,
+    val languages: NamedOptionList<STTOptionLanguage>
+) : NamedOption
+
+data class STTOptionLanguage(
+    override val name: String,
+    override val id: String,
 ) : NamedOption
 
 data class LLMOptionModel(
@@ -107,5 +204,6 @@ data class TTSOptionVoice(
     override val id: String,
 ) : NamedOption
 
-private infix fun String.isModel(id: String) = LLMOptionModel(name = this, id = id)
+private infix fun String.isLLMModel(id: String) = LLMOptionModel(name = this, id = id)
+private infix fun String.isSTTLang(id: String) = STTOptionLanguage(name = this, id = id)
 private infix fun String.isVoice(id: String) = TTSOptionVoice(name = this, id = id)
