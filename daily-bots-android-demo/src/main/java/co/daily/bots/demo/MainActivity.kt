@@ -1,13 +1,5 @@
 package co.daily.bots.demo
 
-import co.daily.bots.demo.ui.InCallLayout
-import co.daily.bots.demo.ui.Logo
-import co.daily.bots.demo.ui.PermissionScreen
-import co.daily.bots.demo.ui.VoiceClientSettingsPanel
-import co.daily.bots.demo.ui.theme.Colors
-import co.daily.bots.demo.ui.theme.RTVIClientTheme
-import co.daily.bots.demo.ui.theme.TextStyles
-import co.daily.bots.demo.ui.theme.textFieldColors
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,9 +50,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.daily.bots.demo.ui.InCallLayout
+import co.daily.bots.demo.ui.Logo
+import co.daily.bots.demo.ui.PermissionScreen
+import co.daily.bots.demo.ui.VoiceClientSettingsPanel
+import co.daily.bots.demo.ui.theme.Colors
+import co.daily.bots.demo.ui.theme.RTVIClientTheme
+import co.daily.bots.demo.ui.theme.TextStyles
+import co.daily.bots.demo.ui.theme.textFieldColors
 
 
-private const val DEFAULT_BACKEND = "https://api.daily.co/v1/bots/start"
+private const val DEFAULT_BACKEND = "https://api.daily.co/v1/bots"
 
 class MainActivity : ComponentActivity() {
 
@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
 
                         voiceClientManager.errors.firstOrNull()?.let { errorText ->
 
-                            val dismiss: () -> Unit = { voiceClientManager.errors.removeFirst() }
+                            val dismiss: () -> Unit = { voiceClientManager.errors.removeAt(0) }
 
                             AlertDialog(
                                 onDismissRequest = dismiss,
