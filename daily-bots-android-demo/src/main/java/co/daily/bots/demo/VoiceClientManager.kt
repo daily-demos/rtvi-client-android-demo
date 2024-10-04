@@ -1,17 +1,18 @@
 package co.daily.bots.demo
 
-import ai.rtvi.client.VoiceClient
-import ai.rtvi.client.VoiceClientOptions
-import ai.rtvi.client.VoiceEventCallbacks
-import co.daily.bots.demo.utils.Timestamp
+import ai.rtvi.client.RTVIClient
+import ai.rtvi.client.RTVIClientOptions
+import ai.rtvi.client.RTVIClientParams
+import ai.rtvi.client.RTVIEventCallbacks
 import ai.rtvi.client.daily.DailyVoiceClient
 import ai.rtvi.client.result.Future
+import ai.rtvi.client.result.RTVIError
 import ai.rtvi.client.result.Result
-import ai.rtvi.client.result.VoiceError
 import ai.rtvi.client.types.ActionDescription
 import ai.rtvi.client.types.Option
 import ai.rtvi.client.types.Participant
 import ai.rtvi.client.types.PipecatMetrics
+import ai.rtvi.client.types.RTVIURLEndpoints
 import ai.rtvi.client.types.ServiceConfig
 import ai.rtvi.client.types.ServiceRegistration
 import ai.rtvi.client.types.Tracks
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import co.daily.bots.demo.utils.Timestamp
 
 @Immutable
 data class Error(val message: String)
@@ -74,14 +76,14 @@ class VoiceClientManager(private val context: Context) {
         }
     }
 
-    private val client = mutableStateOf<VoiceClient?>(null)
+    private val client = mutableStateOf<RTVIClient?>(null)
 
     val state = mutableStateOf<TransportState?>(null)
 
     val errors = mutableStateListOf<Error>()
 
     val actionDescriptions =
-        mutableStateOf<Result<List<ActionDescription>, VoiceError>?>(null)
+        mutableStateOf<Result<List<ActionDescription>, RTVIError>?>(null)
 
     val expiryTime = mutableStateOf<Timestamp?>(null)
 
@@ -95,7 +97,7 @@ class VoiceClientManager(private val context: Context) {
     val camera = mutableStateOf(false)
     val tracks = mutableStateOf<Tracks?>(null)
 
-    private fun <E> Future<E, VoiceError>.displayErrors() = withErrorCallback {
+    private fun <E> Future<E, RTVIError>.displayErrors() = withErrorCallback {
         Log.e(TAG, "Future resolved with error: ${it.description}", it.exception)
         errors.add(Error(it.description))
     }
@@ -111,54 +113,58 @@ class VoiceClientManager(private val context: Context) {
             return
         }
 
-        val options = VoiceClientOptions(
+        val options = RTVIClientOptions(
+            params = RTVIClientParams(
+                baseUrl = baseUrl,
+                endpoints = RTVIURLEndpoints(connect = "/start"),
+                // Note: For security reasons, don't include your API key in a production
+                // client app. See: https://docs.dailybots.ai/architecture
+                headers = apiKey
+                    ?.takeUnless { it.isEmpty() }
+                    ?.let { listOf("Authorization" to "Bearer $it") }
+                    ?: emptyList(),
+                requestData = listOf(
+                    "bot_profile" to Value.Str(initOptions.botProfile.id),
+                    "max_duration" to Value.Number(600.0)
+                ),
+                config = listOf(
+                    ServiceConfig(
+                        "tts", listOf(
+                            Option("voice", runtimeOptions.ttsVoice.id)
+                        )
+                    ),
+                    ServiceConfig(
+                        "llm", listOf(
+                            Option("model", runtimeOptions.llmModel.id),
+                            Option(
+                                "initial_messages", Value.Array(
+                                    Value.Object(
+                                        "role" to Value.Str("system"),
+                                        "content" to Value.Str("You are a helpful voice assistant. Keep answers brief, and do not include markdown or other formatting in your responses, as they will be read out using TTS. Please greet the user and offer to assist them.")
+                                    )
+                                )
+                            ),
+                            Option("run_on_config", true),
+                        )
+                    ),
+                    ServiceConfig(
+                        "stt", listOf(
+                            Option("model", runtimeOptions.sttModel.id),
+                            Option("language", runtimeOptions.sttLanguage.id),
+                        )
+                    )
+                )
+            ),
             services = listOf(
                 ServiceRegistration("tts", initOptions.ttsProvider.id),
                 ServiceRegistration("llm", initOptions.llmProvider.id),
                 ServiceRegistration("stt", initOptions.sttProvider.id),
-            ),
-            config = listOf(
-                ServiceConfig(
-                    "tts", listOf(
-                        Option("voice", runtimeOptions.ttsVoice.id)
-                    )
-                ),
-                ServiceConfig(
-                    "llm", listOf(
-                        Option("model", runtimeOptions.llmModel.id),
-                        Option(
-                            "initial_messages", Value.Array(
-                                Value.Object(
-                                    "role" to Value.Str("system"),
-                                    "content" to Value.Str("You are a helpful voice assistant. Keep answers brief, and do not include markdown or other formatting in your responses, as they will be read out using TTS. Please greet the user and offer to assist them.")
-                                )
-                            )
-                        ),
-                        Option("run_on_config", true),
-                    )
-                ),
-                ServiceConfig(
-                    "stt", listOf(
-                        Option("model", runtimeOptions.sttModel.id),
-                        Option("language", runtimeOptions.sttLanguage.id),
-                    )
-                )
-            ),
-            // Note: For security reasons, don't include your API key in a production
-            // client app. See: https://docs.dailybots.ai/architecture
-            customHeaders = apiKey
-                ?.takeUnless { it.isEmpty() }
-                ?.let { listOf("Authorization" to "Bearer $it") }
-                ?: emptyList(),
-            customBodyParams = listOf(
-                "bot_profile" to Value.Str(initOptions.botProfile.id),
-                "max_duration" to Value.Number(600.0)
             )
         )
 
-        state.value = TransportState.Idle
+        state.value = TransportState.Disconnected
 
-        val callbacks = object : VoiceEventCallbacks() {
+        val callbacks = object : RTVIEventCallbacks() {
             override fun onTransportStateChanged(state: TransportState) {
                 this@VoiceClientManager.state.value = state
             }
@@ -249,9 +255,9 @@ class VoiceClientManager(private val context: Context) {
             }
         }
 
-        val client = DailyVoiceClient(context, baseUrl, callbacks, options)
+        val client = DailyVoiceClient(context, callbacks, options)
 
-        client.start().displayErrors().withErrorCallback {
+        client.connect().displayErrors().withErrorCallback {
             callbacks.onDisconnected()
         }
 
