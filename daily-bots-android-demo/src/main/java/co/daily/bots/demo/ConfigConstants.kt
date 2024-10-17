@@ -127,14 +127,14 @@ object ConfigConstants {
         listOf(
             BotProfile(
                 name = "Voice only",
-                id = "voice_2024_08",
+                id = "voice_2024_10",
                 llmProviders = NamedOptionList(listOf(Anthropic, Together), default = Together),
                 ttsProviders = NamedOptionList(listOf(Cartesia)),
                 sttProviders = NamedOptionList(listOf(Deepgram))
             ),
             BotProfile(
                 name = "Voice and vision",
-                id = "vision_2024_08",
+                id = "vision_2024_10",
                 llmProviders = NamedOptionList(listOf(Anthropic)),
                 ttsProviders = NamedOptionList(listOf(Cartesia)),
                 sttProviders = NamedOptionList(listOf(Deepgram))
