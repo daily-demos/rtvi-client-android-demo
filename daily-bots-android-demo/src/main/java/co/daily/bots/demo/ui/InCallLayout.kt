@@ -1,13 +1,13 @@
 package co.daily.bots.demo.ui
 
+import ai.pipecat.client.result.RTVIError
 import co.daily.bots.demo.VoiceClientManager
 import co.daily.bots.demo.ui.theme.Colors
 import co.daily.bots.demo.ui.theme.TextStyles
 import co.daily.bots.demo.ui.theme.textFieldColors
-import ai.rtvi.client.result.Result
-import ai.rtvi.client.result.VoiceError
-import ai.rtvi.client.types.Type
-import ai.rtvi.client.types.Value
+import ai.pipecat.client.result.Result
+import ai.pipecat.client.types.Type
+import ai.pipecat.client.types.Value
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -126,7 +126,7 @@ fun InCallLayout(voiceClientManager: VoiceClientManager) {
 @Composable
 fun ActionList(voiceClientManager: VoiceClientManager) {
 
-    val resultDialogText: SnapshotStateList<Result<Value, VoiceError>> =
+    val resultDialogText: SnapshotStateList<Result<Value, RTVIError>> =
         remember { mutableStateListOf() }
 
     val actions = voiceClientManager.actionDescriptions.value?.valueOrNull ?: emptyList()

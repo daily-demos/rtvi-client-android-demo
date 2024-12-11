@@ -1,24 +1,24 @@
 package co.daily.bots.demo
 
-import ai.rtvi.client.RTVIClient
-import ai.rtvi.client.RTVIClientOptions
-import ai.rtvi.client.RTVIClientParams
-import ai.rtvi.client.RTVIEventCallbacks
-import ai.rtvi.client.daily.DailyVoiceClient
-import ai.rtvi.client.result.Future
-import ai.rtvi.client.result.RTVIError
-import ai.rtvi.client.result.Result
-import ai.rtvi.client.types.ActionDescription
-import ai.rtvi.client.types.Option
-import ai.rtvi.client.types.Participant
-import ai.rtvi.client.types.PipecatMetrics
-import ai.rtvi.client.types.RTVIURLEndpoints
-import ai.rtvi.client.types.ServiceConfig
-import ai.rtvi.client.types.ServiceRegistration
-import ai.rtvi.client.types.Tracks
-import ai.rtvi.client.types.Transcript
-import ai.rtvi.client.types.TransportState
-import ai.rtvi.client.types.Value
+import ai.pipecat.client.RTVIClient
+import ai.pipecat.client.RTVIClientOptions
+import ai.pipecat.client.RTVIClientParams
+import ai.pipecat.client.RTVIEventCallbacks
+import ai.pipecat.client.daily.DailyTransport
+import ai.pipecat.client.result.Future
+import ai.pipecat.client.result.RTVIError
+import ai.pipecat.client.result.Result
+import ai.pipecat.client.types.ActionDescription
+import ai.pipecat.client.types.Option
+import ai.pipecat.client.types.Participant
+import ai.pipecat.client.types.PipecatMetrics
+import ai.pipecat.client.types.RTVIURLEndpoints
+import ai.pipecat.client.types.ServiceConfig
+import ai.pipecat.client.types.ServiceRegistration
+import ai.pipecat.client.types.Tracks
+import ai.pipecat.client.types.Transcript
+import ai.pipecat.client.types.TransportState
+import ai.pipecat.client.types.Value
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Immutable
@@ -255,7 +255,7 @@ class VoiceClientManager(private val context: Context) {
             }
         }
 
-        val client = DailyVoiceClient(context, callbacks, options)
+        val client = RTVIClient(DailyTransport.Factory(context), callbacks, options)
 
         client.connect().displayErrors().withErrorCallback {
             callbacks.onDisconnected()
