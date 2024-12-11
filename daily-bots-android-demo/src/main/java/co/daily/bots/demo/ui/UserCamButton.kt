@@ -2,8 +2,8 @@ package co.daily.bots.demo.ui
 
 import co.daily.bots.demo.R
 import co.daily.bots.demo.ui.theme.Colors
-import ai.rtvi.client.daily.VoiceClientVideoView
-import ai.rtvi.client.types.MediaTrackId
+import ai.pipecat.client.daily.VoiceClientVideoView
+import ai.pipecat.client.types.MediaTrackId
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

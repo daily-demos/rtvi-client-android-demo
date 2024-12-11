@@ -57,7 +57,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.rtvi.client.daily)
+    implementation(libs.pipecat.client.daily)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
